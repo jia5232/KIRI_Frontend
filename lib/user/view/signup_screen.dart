@@ -61,7 +61,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(height: 30.0),
                 Text('학교'),
                 DropdownButton(
-                  value: univNames[0],
+                  value: univName,
                   items: univNames
                       .map((e) => DropdownMenuItem(
                             value: e,
