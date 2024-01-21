@@ -83,9 +83,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   children: [
                     SizedBox(
-                      width: 120,
-                      height: 30,
+                      width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        suffixText: email_suffix[univName] == null
+                            ? ''
+                            : email_suffix[univName],
                         hintText: '이메일 입력',
                         onChanged: (String value) {
                           email_prefix = value;
@@ -99,13 +101,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         },
                       ),
                     ),
-                    SizedBox(width: 6.0),
-                    Text(email_suffix[univName]!),
                     SizedBox(width: 12.0),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
-                        minimumSize: Size(100.0, 30.0),
+                        // minimumSize:,
                       ),
                       onPressed: () {
                         // 인증번호 전송 api
@@ -113,7 +113,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         // 신규 이메일 -> 서버에서 인증번호를 받아 저장해둔다.
                         // key = 서버에서 발급한 인증번호.
                       },
-                      child: Text('인증번호 전송'),
+                      child: Text('인증'),
                     ),
                   ],
                 ),
@@ -124,17 +124,18 @@ class _SignupScreenState extends State<SignupScreen> {
                       fontSize: 12.0,
                     ),
                   ),
+                SizedBox(height: 8.0),
                 Row(
                   children: [
                     SizedBox(
-                      width: 232,
-                      height: 30,
+                      width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
                         hintText: '인증번호 입력',
                         onChanged: (String value) {
                           inputKey = value;
                           setState(() {
-                            isEmailAuthenticated = key==inputKey ? true : false;
+                            isEmailAuthenticated =
+                            key == inputKey ? true : false;
                           });
                         },
                       ),
@@ -143,12 +144,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
-                        minimumSize: Size(100.0, 30.0),
                       ),
                       onPressed: () {
                         // 인증번호 확인 api
                       },
-                      child: Text('인증번호 확인'),
+                      child: Text('확인'),
                     ),
                   ],
                 ),
@@ -168,7 +168,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                   obscureText: true,
                 ),
-                SizedBox(height: 4.0),
+                SizedBox(height: 8.0),
                 CustomTextFormField(
                   hintText: '비밀번호를 한번 더 입력해주세요.',
                   onChanged: (String value) {

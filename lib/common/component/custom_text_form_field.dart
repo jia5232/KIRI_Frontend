@@ -5,6 +5,7 @@ import '../const/colors.dart';
 class CustomTextFormField extends StatelessWidget {
   final String? hintText;
   final String? errorText;
+  final String? suffixText;
   final bool obscureText;
   final bool autoFocus;
   final ValueChanged<String>? onChanged;
@@ -12,6 +13,7 @@ class CustomTextFormField extends StatelessWidget {
   const CustomTextFormField({
     this.hintText,
     this.errorText,
+    this.suffixText,
     this.obscureText = false,
     this.autoFocus = false,
     required this.onChanged,
@@ -36,6 +38,19 @@ class CustomTextFormField extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         contentPadding: EdgeInsets.all(5.0),
+        suffixIcon: suffixText == null
+            ? null
+            : Padding(
+                padding: EdgeInsets.only(right: 8.0),
+                child: Text(suffixText!),
+              ),
+        suffixIconConstraints: BoxConstraints(
+          minHeight: 10,
+          minWidth: 10,
+        ),
+        suffixStyle: TextStyle(
+          fontSize: 14.0,
+        ),
         hintText: hintText,
         hintStyle: TextStyle(
           color: BODY_TEXT_COLOR,
