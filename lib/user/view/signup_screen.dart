@@ -16,13 +16,16 @@ class _SignupScreenState extends State<SignupScreen> {
   String email_prefix = '';
   final email_suffix = {'국민대학교': '@kookmin.ac.kr', '세종대학교': '@sejong.ac.kr'};
   String email = '';
+  String key = ''; // 서버에서 받아올 이메일 인증번호
+  String inputKey = ''; // 사용자가 입력할 이메일 인증번호
   String password = '';
   String password2 = '';
   bool isAccept = false;
 
   //이메일, 비밀번호 검증
   bool isEmailNull = true;
-  bool isEmailDuplicated = false; //이메일 중복 작업해야 함.
+  bool isEmailDuplicated = false; //true로 두고 이메일 중복 작업해야 함.
+  bool isEmailAuthenticated = true; // false로 두고 이메일 인증 작업해야 함.
   bool isPasswordNull = true;
   bool isPasswordDifferent = false;
 
@@ -102,10 +105,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
-                        fixedSize: Size(100.0, 20.0),
+                        minimumSize: Size(100.0, 30.0),
                       ),
-                      onPressed: () {},
-                      child: Text('중복확인'),
+                      onPressed: () {
+                        // 인증번호 전송 api
+                        // 중복 이메일 -> 이미 가입된 이메일입니다.
+                        // 신규 이메일 -> 서버에서 인증번호를 받아 저장해둔다.
+                        // key = 서버에서 발급한 인증번호.
+                      },
+                      child: Text('인증번호 전송'),
                     ),
                   ],
                 ),
@@ -116,6 +124,34 @@ class _SignupScreenState extends State<SignupScreen> {
                       fontSize: 12.0,
                     ),
                   ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 232,
+                      height: 30,
+                      child: CustomTextFormField(
+                        hintText: '인증번호 입력',
+                        onChanged: (String value) {
+                          inputKey = value;
+                          setState(() {
+                            isEmailAuthenticated = key==inputKey ? true : false;
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 12.0),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: PRIMARY_COLOR,
+                        minimumSize: Size(100.0, 30.0),
+                      ),
+                      onPressed: () {
+                        // 인증번호 확인 api
+                      },
+                      child: Text('인증번호 확인'),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 30.0),
                 Text('비밀번호'),
                 SizedBox(height: 4.0),
@@ -181,6 +217,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     TextButton(
                         style: ElevatedButton.styleFrom(
                           foregroundColor: PRIMARY_COLOR,
+                          minimumSize: Size(80.0, 30.0),
                         ),
                         onPressed: () {
                           showDialog(
@@ -213,6 +250,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
+                    minimumSize: Size(
+                      MediaQuery.of(context).size.width,
+                      50.0,
+                    ),
                   ),
                   onPressed: () {
                     if (!isEmailNull &&
