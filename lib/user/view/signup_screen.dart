@@ -168,6 +168,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                   obscureText: true,
                 ),
+                SizedBox(height: 4.0),
                 CustomTextFormField(
                   hintText: '비밀번호를 한번 더 입력해주세요.',
                   onChanged: (String value) {
