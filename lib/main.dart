@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kiri/common/view/root_tab.dart';
 import 'package:kiri/common/view/splash_screen.dart';
+import 'package:kiri/user/view/login_screen.dart';
 import 'package:kiri/user/view/signup_screen.dart';
 
 void main() {
@@ -17,7 +18,7 @@ class _App extends StatelessWidget {
         fontFamily: 'NotoSans',
         ),
       debugShowCheckedModeBanner: false,
-      home: SignupScreen(),
+      home: LoginScreen(),
       );
   }
 }
