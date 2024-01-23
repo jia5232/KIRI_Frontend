@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kiri/user/view/signup_screen.dart';
 
 import '../../common/component/custom_text_form_field.dart';
 import '../../common/const/colors.dart';
 import '../../common/const/data.dart';
 import '../../common/layout/default_layout.dart';
-import '../../common/secure_storage/secure_storage.dart';
 import '../../common/view/root_tab.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -20,7 +20,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  String username = '';
+  String email = '';
   String password = '';
 
   @override
@@ -61,7 +61,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 CustomTextFormField(
                   hintText: '이메일을 입력해주세요.',
                   onChanged: (String value) {
-                    username = value;
+                    email = value;
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -75,35 +75,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () async {
-                    //id:password
-                    final rawString = '$username:$password';
-
-                    //일반 스트링을 base 64로 바꿈
-                    Codec<String, String> stringToBase64 = utf8.fuse(base64);
-                    String token = stringToBase64.encode(rawString);
-
                     final resp = await dio.post(
-                      'http://$ip/auth/login',
+                      'http://$ip/login',
+                      data: {'email': email, 'password': password},
                       options: Options(
-                        headers: {
-                          'authorization': 'Basic $token',
-                        },
+                        headers: {'Content-Type': 'application/json'},
                       ),
                     );
 
-                    final refreshToken = resp.data['refreshToken'];
-                    final accessToken = resp.data['accessToken'];
+                    final refreshTokenArray = resp.headers['refreshToken'];
+                    final accessTokenArray = resp.headers['accessToken'];
 
-                    final storage = ref.read(secureStorageProvider);
+                    final refreshToken = refreshTokenArray != null ? refreshTokenArray[0].substring("Bearer ".length) : null;
+                    final accessToken = accessTokenArray != null ? accessTokenArray[0].substring("Bearer ".length) : null;
 
-                    storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
-                    storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
+
+                    if(refreshToken==null || accessToken==null){
+                      print("token null!!!");
+                    }
+
+                    await storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
+                    await storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
 
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => RootTab(),
                       ),
                     );
+
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,

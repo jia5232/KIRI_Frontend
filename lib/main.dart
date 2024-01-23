@@ -18,7 +18,7 @@ class _App extends StatelessWidget {
         fontFamily: 'NotoSans',
         ),
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      home: SplashScreen(),
       );
   }
 }

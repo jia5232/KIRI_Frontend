@@ -1,7 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:kiri/common/component/custom_text_form_field.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
+import 'package:kiri/common/view/splash_screen.dart';
+import 'package:kiri/user/view/login_screen.dart';
+
+import '../../common/const/data.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -18,16 +23,18 @@ class _SignupScreenState extends State<SignupScreen> {
   String email = '';
   String key = ''; // 서버에서 받아올 이메일 인증번호
   String inputKey = ''; // 사용자가 입력할 이메일 인증번호
+  String nickname = '';
   String password = '';
   String password2 = '';
   bool isAccept = false;
 
-  //이메일, 비밀번호 검증
+  //이메일, 비밀번호, 닉네임 검증
   bool isEmailNull = true;
   bool isEmailDuplicated = false; //true로 두고 이메일 중복 작업해야 함.
   bool isEmailAuthenticated = true; // false로 두고 이메일 인증 작업해야 함.
   bool isPasswordNull = true;
   bool isPasswordDifferent = false;
+  bool isNicknameDuplicated = false; //true로 두고 닉네임 중복 작업해야 함.
 
   @override
   void initState() {
@@ -39,6 +46,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dio = Dio();
+
     return DefaultLayout(
       child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -50,7 +59,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: 30.0),
+                SizedBox(height: 10.0),
                 Center(
                   child: Text(
                     'SIGNUP',
@@ -61,7 +70,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 30.0),
+                SizedBox(height: 20.0),
                 Text('학교'),
                 DropdownButton(
                   value: univName,
@@ -135,7 +144,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           inputKey = value;
                           setState(() {
                             isEmailAuthenticated =
-                            key == inputKey ? true : false;
+                                key == inputKey ? true : false;
                           });
                         },
                       ),
@@ -147,6 +156,32 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       onPressed: () {
                         // 인증번호 확인 api
+                      },
+                      child: Text('확인'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 30.0),
+                Text('닉네임'),
+                SizedBox(height: 4.0),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 3 * 2,
+                      child: CustomTextFormField(
+                        hintText: '닉네임 입력',
+                        onChanged: (String value) {
+                          nickname = value;
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 12.0),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: PRIMARY_COLOR,
+                      ),
+                      onPressed: () {
+                        // 닉네임 중복 확인 api
                       },
                       child: Text('확인'),
                     ),
@@ -256,18 +291,44 @@ class _SignupScreenState extends State<SignupScreen> {
                       50.0,
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (!isEmailNull &&
                         !isEmailDuplicated &&
                         !isPasswordNull &&
                         !isPasswordDifferent &&
-                        isAccept) {
+                        !isNicknameDuplicated &&
+                        isAccept &&
+                        isEmailAuthenticated) {
                       // 회원가입 api 요청..
-                      print("univName: $univName");
-                      print("email: $email");
-                      print("password: $password");
-                      print("password2: $password");
-                      print("isAccept: $isAccept");
+
+                      try{
+                        final resp = await dio.post(
+                          'http://$ip/signup',
+                          data: {
+                            'email': email,
+                            'password': password,
+                            'nickname': nickname,
+                            'univName': univName,
+                            'isAccept': isAccept,
+                            'isEmailAuthenticated': isEmailAuthenticated,
+                          },
+                        );
+
+                        print(resp.data.toString());
+
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => LoginScreen(),
+                          ),
+                        );
+                      } catch(e){ //서버에서 넘긴 에러를 모달로 띄워줘야 한다.
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => SignupScreen(),
+                          ),
+                        );
+                      }
+
                     }
                   },
                   child: Text('회원가입하기'),
