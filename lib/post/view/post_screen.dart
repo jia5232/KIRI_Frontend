@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
+import 'package:kiri/post/component/post_popup_dialog.dart';
 
 import '../component/post_card.dart';
 
@@ -40,6 +41,26 @@ class _PostScreenState extends State<PostScreen> {
     setState(() {
       isSelected = [fromSchool, toSchool];
     });
+  }
+
+  void showPopup(context, isFromSchool, depart, arrive, departTime, maxMember,
+      nowMember, cost) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return PostPopupDialog(
+            isFromSchool: isFromSchool,
+            depart: depart,
+            arrive: arrive,
+            departTime: departTime,
+            maxMember: maxMember,
+            nowMember: nowMember,
+            cost: cost,
+            onPressed: (){
+              print('dialogs clicked!');
+            },
+          );
+        });
   }
 
   @override
@@ -140,7 +161,16 @@ class _PostScreenState extends State<PostScreen> {
                               nowMember: 1,
                             ),
                             onTap: () {
-                              print('PostCard Click!');
+                              showPopup(
+                                context,
+                                true,
+                                '국민대학교',
+                                '보문역',
+                                '12:00',
+                                3,
+                                1,
+                                9900,
+                              );
                             },
                           );
                         },

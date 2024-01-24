@@ -45,10 +45,7 @@ class PostCard extends StatelessWidget {
               children: [
                 Text(
                   '$departTime 출발',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w500
-                  ),
+                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
                 ),
                 Text('현재인원 $nowMember/$maxMember'),
               ],
@@ -81,6 +78,11 @@ class _MainText extends StatelessWidget {
         ),
       );
     else //학교로 도착
-      return Text('$depart 출발');
+      return Text(
+        '$depart 출발',
+        style: TextStyle(
+          fontSize: 20.0,
+        ),
+      );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:kiri/common/const/data.dart';
 import 'package:kiri/common/view/root_tab.dart';
@@ -15,6 +16,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final dio = Dio();
+
   @override
   void initState() {
     super.initState();
@@ -22,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     checkToken();
   }
 
-  void deleteToken() async{
+  void deleteToken() async {
     await storage.deleteAll();
   }
 
@@ -31,17 +34,24 @@ class _SplashScreenState extends State<SplashScreen> {
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
 
-    // 토큰의 유효성도 검증해야 하지만 일단은 스토리지에 토큰이 있는지만 체크!
-    if(refreshToken==null || accessToken==null){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => LoginScreen(),
+    try {
+      final resp = await dio.post(
+        'http://$ip/token',
+        options: Options(
+          headers: {
+            'authorization': 'Bearer $refreshToken',
+          },
         ),
       );
-    } else{
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => RootTab(),
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => LoginScreen(),
         ),
       );
     }

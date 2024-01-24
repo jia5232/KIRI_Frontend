@@ -86,24 +86,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     final refreshTokenArray = resp.headers['refreshToken'];
                     final accessTokenArray = resp.headers['accessToken'];
 
-                    final refreshToken = refreshTokenArray != null ? refreshTokenArray[0].substring("Bearer ".length) : null;
-                    final accessToken = accessTokenArray != null ? accessTokenArray[0].substring("Bearer ".length) : null;
+                    final refreshToken = refreshTokenArray != null
+                        ? refreshTokenArray[0].substring("Bearer ".length)
+                        : null;
+                    final accessToken = accessTokenArray != null
+                        ? accessTokenArray[0].substring("Bearer ".length)
+                        : null;
 
-
-                    if(refreshToken==null || accessToken==null){
+                    if (refreshToken == null || accessToken == null) {
                       print("token null!!!");
                     }
 
-                    await storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
-                    await storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
+                    await storage.write(
+                        key: REFRESH_TOKEN_KEY, value: refreshToken);
+                    await storage.write(
+                        key: ACCESS_TOKEN_KEY, value: accessToken);
 
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => RootTab(),
                       ),
                     );
-
-
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
@@ -113,7 +116,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => SignupScreen(),
