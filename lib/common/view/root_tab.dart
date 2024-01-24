@@ -70,6 +70,9 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
             label: '마이페이지',
           ),
         ],
+        selectedLabelStyle: TextStyle(
+          fontSize: 12.0,
+        ),
       ),
     );
   }
