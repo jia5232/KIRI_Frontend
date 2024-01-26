@@ -34,15 +34,41 @@ class _SplashScreenState extends State<SplashScreen> {
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
 
+    print('refreshToken: $refreshToken');
+    print('accessToken: $accessToken');
+
     try {
-      final resp = await dio.post(
+      final resp = await dio.post( //토큰 재발행이 제대로 안되는상황!!!!!
         'http://$ip/token',
         options: Options(
           headers: {
-            'authorization': 'Bearer $refreshToken',
+            'Authorization': 'Bearer $refreshToken',
           },
         ),
       );
+
+      final refreshTokenArray = resp.headers['refreshToken'];
+      final accessTokenArray = resp.headers['accessToken'];
+
+      final newRefreshToken = refreshTokenArray != null
+          ? refreshTokenArray[0].substring("Bearer ".length)
+          : null;
+      final newAccessToken = accessTokenArray != null
+          ? accessTokenArray[0].substring("Bearer ".length)
+          : null;
+
+      print("newRefreshToken: $newRefreshToken");
+      print("newAccessToken: $newAccessToken");
+
+      if (newRefreshToken == null || newAccessToken == null) {
+        print("token null!!!");
+      }
+
+      await storage.write(
+          key: REFRESH_TOKEN_KEY, value: newRefreshToken);
+      await storage.write(
+          key: ACCESS_TOKEN_KEY, value: newAccessToken);
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => RootTab(),

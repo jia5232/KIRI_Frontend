@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kiri/common/view/root_tab.dart';
 import 'package:kiri/common/view/splash_screen.dart';
-import 'package:kiri/user/view/login_screen.dart';
-import 'package:kiri/user/view/signup_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
   runApp(_App());
@@ -18,6 +18,15 @@ class _App extends StatelessWidget {
         fontFamily: 'NotoSans',
         ),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('ko', 'KR'), // Korean
+        // ... other locales your app supports
+      ],
       home: SplashScreen(),
       );
   }

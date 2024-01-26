@@ -94,7 +94,7 @@ class PostPopupDialog extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 8.0),
+            SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: onPressed,
               child: Text('참여하기'),

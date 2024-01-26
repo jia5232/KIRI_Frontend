@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
+import 'package:kiri/post/view/post_form_screen.dart';
 
 import '../component/post_card.dart';
 
@@ -214,7 +215,13 @@ class _TopState extends State<_Top> {
             ),
           ),
           TextButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PostFormScreen(),
+                ),
+              );
+            },
             icon: FaIcon(FontAwesomeIcons.solidPenToSquare),
             label: Text(
               "내가 방장",
