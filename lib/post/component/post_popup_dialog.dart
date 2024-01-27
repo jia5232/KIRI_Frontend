@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 
 class PostPopupDialog extends StatelessWidget {
+  final int id;
   final bool isFromSchool;
   final String depart;
   final String arrive;
@@ -15,6 +16,7 @@ class PostPopupDialog extends StatelessWidget {
   final VoidCallback deleteOnPressed;
 
   const PostPopupDialog({
+    required this.id,
     required this.isFromSchool,
     required this.depart,
     required this.arrive,
@@ -30,6 +32,7 @@ class PostPopupDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final departTimeList = departTime.split(' ');
     final discountedPrice = (cost / maxMember).toInt();
 
     final costTextStyle = TextStyle(
@@ -77,11 +80,14 @@ class PostPopupDialog extends StatelessWidget {
                       )),
               ],
             ),
+            SizedBox(
+              height: 6.0,
+            ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '$departTime 출발',
+                  '${departTimeList[0]}일 ${departTimeList[1]}출발',
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.w500,
@@ -89,7 +95,7 @@ class PostPopupDialog extends StatelessWidget {
                 ),
                 SizedBox(width: 10.0),
                 Text(
-                  '현재인원 $nowMember/$maxMember',
+                  '현재 $nowMember/$maxMember',
                   style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w500,
@@ -151,16 +157,16 @@ class _MainText extends StatelessWidget {
       return Text(
         '$arrive 도착',
         style: TextStyle(
-          fontSize: 32.0,
-          fontWeight: FontWeight.w500,
+          fontSize: 18.0,
+          fontWeight: FontWeight.w900,
         ),
       );
     else //학교로 도착
       return Text(
         '$depart 출발',
         style: TextStyle(
-          fontSize: 32.0,
-          fontWeight: FontWeight.w500,
+          fontSize: 18.0,
+          fontWeight: FontWeight.w900,
         ),
       );
   }

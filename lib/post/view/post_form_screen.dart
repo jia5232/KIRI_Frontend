@@ -59,9 +59,9 @@ class _PostFormScreenState extends State<PostFormScreen> {
             mode: CupertinoDatePickerMode.dateAndTime,
             initialDateTime:
                 selectedDateTime.isBefore(now) ? now : selectedDateTime,
-            minimumDate: now, // 최소 시간을 현재 시간으로 설정합니다.
+            minimumDate: now, // 최소 시간을 현재 시간으로 설정
             maximumDate:
-                now.add(Duration(days: 7)), // 최대 7일 후까지 선택 가능하도록 설정합니다.
+                now.add(Duration(days: 1)), // 최대 하루 뒤까지 선택 가능하도록 설정
             onDateTimeChanged: (DateTime newDateTime) {
               setState(() {
                 selectedDateTime = newDateTime;
@@ -296,7 +296,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        '중형택시 기준 최대 탑승 가능 승객은 운전자 제외 4명입니다.',
+                        '중형택시 기준 최대 탑승 인원은 운전자 제외 4명입니다. (3명 권장)',
                         style: TextStyle(
                           fontSize: 12.0,
                         ),

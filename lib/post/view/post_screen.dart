@@ -1,10 +1,15 @@
+import 'dart:math';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
+import 'package:kiri/post/model/post_model.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 
+import '../../common/const/data.dart';
 import '../component/post_card.dart';
 
 class PostScreen extends StatefulWidget {
@@ -20,6 +25,41 @@ class _PostScreenState extends State<PostScreen> {
   bool toSchool = false; //학교로 도착
   late List<bool> isSelected;
   String? searchKeyword = '';
+
+  Future<List> paginatePost(int lastPostId, bool isFromSchool, String? searchKeyWord) async {
+    final dio = Dio();
+
+    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+    String url = 'http://$ip/posts?lastPostId=$lastPostId&isFromSchool=$isFromSchool';
+    if(searchKeyword!=null && searchKeyword!=''){
+      url += '&searchKeyword=$searchKeyword';
+    }
+
+    final resp = await dio.get(
+      url,
+      options: Options(headers: {
+        'Authorization': 'Bearer $accessToken',
+      }),
+    );
+
+    //resp.data -> http message body를 가져올 수 있음.
+    return resp.data['data'];
+  }
+
+  Future getPostDetail(int id) async {
+    final dio = Dio();
+
+    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+
+    final resp = await dio.get(
+      'http://$ip/posts/$id',
+      options: Options(headers: {
+        'Authorization': 'Bearer $accessToken',
+      }),
+    );
+
+    return resp.data;
+  }
 
   @override
   void initState() {
@@ -44,12 +84,13 @@ class _PostScreenState extends State<PostScreen> {
     });
   }
 
-  void showPopup(context, isFromSchool, depart, arrive, departTime, maxMember,
-      nowMember, cost, isAuthor) {
+  void showPopup(context, id, isFromSchool, depart, arrive, departTime,
+      maxMember, nowMember, cost, isAuthor) {
     showDialog(
         context: context,
         builder: (context) {
           return PostPopupDialog(
+            id: id,
             isFromSchool: isFromSchool,
             depart: depart,
             arrive: arrive,
@@ -58,10 +99,10 @@ class _PostScreenState extends State<PostScreen> {
             nowMember: nowMember,
             cost: cost,
             isAuthor: isAuthor,
-            joinOnPressed: (){
+            joinOnPressed: () {
               print('join button clicked!');
             },
-            deleteOnPressed: (){
+            deleteOnPressed: () {
               print('delete button clicked!');
             },
           );
@@ -126,10 +167,9 @@ class _PostScreenState extends State<PostScreen> {
                           ),
                           color: PRIMARY_COLOR,
                           onPressed: () {
-                            print("Search button clicked!!!");
-                            print(searchKeyword);
-                            print(fromSchool);
-                            print(toSchool);
+                            setState(() {
+                              paginatePost(20, fromSchool, searchKeyword);
+                            });
                           },
                         ),
                         enabledBorder: OutlineInputBorder(
@@ -152,38 +192,49 @@ class _PostScreenState extends State<PostScreen> {
                     SizedBox(height: 12),
                     Container(
                       height: 500,
-                      child: ListView.separated(
-                        controller: controller,
-                        itemCount: 10,
-                        itemBuilder: (_, index) {
-                          return GestureDetector(
-                            child: PostCard(
-                              isFromSchool: true,
-                              depart: '국민대학교',
-                              arrive: '디지털미디어시티역',
-                              departTime: '12:00',
-                              maxMember: 3,
-                              nowMember: 1,
-                              isAuthor: true,
-                            ),
-                            onTap: () {
-                              showPopup(
-                                context,
-                                true,
-                                '국민대학교',
-                                '보문역',
-                                '12:00',
-                                3,
-                                1,
-                                9900,
-                                true,
+                      child: FutureBuilder<List>(
+                        builder: (context, AsyncSnapshot<List> snapshot) {
+                          if (!snapshot.hasData) {
+                            return Container(
+                              child: Text('no data'),
+                            );
+                          }
+
+                          return ListView.separated(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (_, index) {
+                              final item = snapshot.data![index];
+                              final pItem = PostModel.fromJson(json: item);
+
+                              return GestureDetector(
+                                child: PostCard.fromModel(postModel: pItem),
+                                onTap: () async {
+                                  //getPostDetail에서 api요청해서 가져오고,
+                                  final detailedPostData = await getPostDetail(pItem.id);
+                                  //PostModel로 변환한다.
+                                  final detailedItem = PostModel.fromJson(json: detailedPostData);
+
+                                  showPopup(
+                                    context,
+                                    detailedItem.id,
+                                    detailedItem.isFromSchool,
+                                    detailedItem.depart,
+                                    detailedItem.arrive,
+                                    detailedItem.departTime,
+                                    detailedItem.maxMember,
+                                    detailedItem.nowMember,
+                                    detailedItem.cost,
+                                    detailedItem.isAuthor,
+                                  );
+                                },
                               );
+                            },
+                            separatorBuilder: (_, index) {
+                              return SizedBox(height: 16.0);
                             },
                           );
                         },
-                        separatorBuilder: (_, index) {
-                          return SizedBox(height: 16.0);
-                        },
+                        future: paginatePost(20, fromSchool, searchKeyword),
                       ),
                     ),
                   ],

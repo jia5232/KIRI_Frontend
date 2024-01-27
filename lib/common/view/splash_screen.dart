@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
     print('accessToken: $accessToken');
 
     try {
-      final resp = await dio.post( //토큰 재발행이 제대로 안되는상황!!!!!
+      final resp = await dio.post(
         'http://$ip/token',
         options: Options(
           headers: {
