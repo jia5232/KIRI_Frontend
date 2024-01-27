@@ -45,7 +45,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void showPopup(context, isFromSchool, depart, arrive, departTime, maxMember,
-      nowMember, cost) {
+      nowMember, cost, isAuthor) {
     showDialog(
         context: context,
         builder: (context) {
@@ -57,8 +57,12 @@ class _PostScreenState extends State<PostScreen> {
             maxMember: maxMember,
             nowMember: nowMember,
             cost: cost,
-            onPressed: (){
-              print('dialogs clicked!');
+            isAuthor: isAuthor,
+            joinOnPressed: (){
+              print('join button clicked!');
+            },
+            deleteOnPressed: (){
+              print('delete button clicked!');
             },
           );
         });
@@ -156,10 +160,11 @@ class _PostScreenState extends State<PostScreen> {
                             child: PostCard(
                               isFromSchool: true,
                               depart: '국민대학교',
-                              arrive: '보문역',
+                              arrive: '디지털미디어시티역',
                               departTime: '12:00',
                               maxMember: 3,
                               nowMember: 1,
+                              isAuthor: true,
                             ),
                             onTap: () {
                               showPopup(
@@ -171,6 +176,7 @@ class _PostScreenState extends State<PostScreen> {
                                 3,
                                 1,
                                 9900,
+                                true,
                               );
                             },
                           );

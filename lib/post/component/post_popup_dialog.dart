@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 
 class PostPopupDialog extends StatelessWidget {
@@ -9,7 +10,9 @@ class PostPopupDialog extends StatelessWidget {
   final int maxMember;
   final int nowMember;
   final int cost;
-  final VoidCallback onPressed;
+  final bool isAuthor;
+  final VoidCallback joinOnPressed;
+  final VoidCallback deleteOnPressed;
 
   const PostPopupDialog({
     required this.isFromSchool,
@@ -19,7 +22,9 @@ class PostPopupDialog extends StatelessWidget {
     required this.maxMember,
     required this.nowMember,
     required this.cost,
-    required this.onPressed,
+    required this.isAuthor,
+    required this.joinOnPressed,
+    required this.deleteOnPressed,
     super.key,
   });
 
@@ -50,10 +55,27 @@ class PostPopupDialog extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _MainText(
-              isFromSchool: isFromSchool,
-              depart: depart,
-              arrive: arrive,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                _MainText(
+                  isFromSchool: isFromSchool,
+                  depart: depart,
+                  arrive: arrive,
+                ),
+                if (isAuthor)
+                  SizedBox(
+                      height: 30.0,
+                      width: 60.0,
+                      child: IconButton(
+                        onPressed: deleteOnPressed,
+                        icon: FaIcon(
+                          FontAwesomeIcons.trash,
+                          size: 20.0,
+                          color: Colors.red,
+                        ),
+                      )),
+              ],
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -96,7 +118,7 @@ class PostPopupDialog extends StatelessWidget {
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: onPressed,
+              onPressed: joinOnPressed,
               child: Text('참여하기'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PRIMARY_COLOR,

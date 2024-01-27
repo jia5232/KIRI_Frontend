@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 //isFromSchool, depart, arrive, departTime, maxMember, nowMember
 
@@ -9,6 +10,7 @@ class PostCard extends StatelessWidget {
   final String departTime;
   final int maxMember;
   final int nowMember;
+  final bool isAuthor;
 
   const PostCard(
       {required this.isFromSchool,
@@ -17,6 +19,7 @@ class PostCard extends StatelessWidget {
       required this.departTime,
       required this.maxMember,
       required this.nowMember,
+      required this.isAuthor,
       super.key});
 
   @override
@@ -38,6 +41,11 @@ class PostCard extends StatelessWidget {
               arrive: arrive,
             ),
           ),
+          if (isAuthor)
+            FaIcon(
+              FontAwesomeIcons.crown,
+              size: 16.0,
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
             child: Column(
@@ -74,14 +82,14 @@ class _MainText extends StatelessWidget {
       return Text(
         '$arrive 도착',
         style: TextStyle(
-          fontSize: 20.0,
+          fontSize: 18.0,
         ),
       );
     else //학교로 도착
       return Text(
         '$depart 출발',
         style: TextStyle(
-          fontSize: 20.0,
+          fontSize: 18.0,
         ),
       );
   }
