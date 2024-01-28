@@ -122,14 +122,22 @@ class PostPopupDialog extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: joinOnPressed,
-              child: Text('참여하기'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: PRIMARY_COLOR,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+            SizedBox(height: 20.0),
+            SizedBox(
+              height: 40.0,
+              child: ElevatedButton(
+                onPressed: joinOnPressed,
+                child: Text(
+                  '참여하기',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: PRIMARY_COLOR,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
               ),
             ),

@@ -4,9 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
+import 'package:kiri/common/dio/dio.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
 import 'package:kiri/post/model/post_model.dart';
+import 'package:kiri/post/repository/post_repository.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 
 import '../../common/const/data.dart';
@@ -26,12 +28,14 @@ class _PostScreenState extends State<PostScreen> {
   late List<bool> isSelected;
   String? searchKeyword = '';
 
-  Future<List> paginatePost(int lastPostId, bool isFromSchool, String? searchKeyWord) async {
+  Future<List> paginatePost(
+      int lastPostId, bool isFromSchool, String? searchKeyWord) async {
     final dio = Dio();
 
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-    String url = 'http://$ip/posts?lastPostId=$lastPostId&isFromSchool=$isFromSchool';
-    if(searchKeyword!=null && searchKeyword!=''){
+    String url =
+        'http://$ip/posts?lastPostId=$lastPostId&isFromSchool=$isFromSchool';
+    if (searchKeyword != null && searchKeyword != '') {
       url += '&searchKeyword=$searchKeyword';
     }
 
@@ -46,19 +50,15 @@ class _PostScreenState extends State<PostScreen> {
     return resp.data['data'];
   }
 
-  Future getPostDetail(int id) async {
+  Future<PostModel> getPostDetail(int id) async {
     final dio = Dio();
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-
-    final resp = await dio.get(
-      'http://$ip/posts/$id',
-      options: Options(headers: {
-        'Authorization': 'Bearer $accessToken',
-      }),
+    dio.interceptors.add(
+      CustomInterceptor(storage),
     );
 
-    return resp.data;
+    final repository = PostRepository(dio, baseUrl: "http://$ip/posts");
+    return repository.getPostDetail(id: id);
   }
 
   @override
@@ -81,6 +81,8 @@ class _PostScreenState extends State<PostScreen> {
     }
     setState(() {
       isSelected = [fromSchool, toSchool];
+      //pagenate 요청 다시 불러오기
+      paginatePost(20, fromSchool, searchKeyword);
     });
   }
 
@@ -204,27 +206,26 @@ class _PostScreenState extends State<PostScreen> {
                             itemCount: snapshot.data!.length,
                             itemBuilder: (_, index) {
                               final item = snapshot.data![index];
-                              final pItem = PostModel.fromJson(json: item);
+                              final pItem = PostModel.fromJson(item);
 
                               return GestureDetector(
                                 child: PostCard.fromModel(postModel: pItem),
                                 onTap: () async {
-                                  //getPostDetail에서 api요청해서 가져오고,
-                                  final detailedPostData = await getPostDetail(pItem.id);
-                                  //PostModel로 변환한다.
-                                  final detailedItem = PostModel.fromJson(json: detailedPostData);
+                                  //getPostDetail에서 api요청해서 가져오고, PostModel로 변환한다. (retrofit)
+                                  final detailedPostModel =
+                                      await getPostDetail(pItem.id);
 
                                   showPopup(
                                     context,
-                                    detailedItem.id,
-                                    detailedItem.isFromSchool,
-                                    detailedItem.depart,
-                                    detailedItem.arrive,
-                                    detailedItem.departTime,
-                                    detailedItem.maxMember,
-                                    detailedItem.nowMember,
-                                    detailedItem.cost,
-                                    detailedItem.isAuthor,
+                                    detailedPostModel.id,
+                                    detailedPostModel.isFromSchool,
+                                    detailedPostModel.depart,
+                                    detailedPostModel.arrive,
+                                    detailedPostModel.departTime,
+                                    detailedPostModel.maxMember,
+                                    detailedPostModel.nowMember,
+                                    detailedPostModel.cost,
+                                    detailedPostModel.isAuthor,
                                   );
                                 },
                               );
@@ -234,7 +235,7 @@ class _PostScreenState extends State<PostScreen> {
                             },
                           );
                         },
-                        future: paginatePost(20, fromSchool, searchKeyword),
+                        future: paginatePost(10, fromSchool, searchKeyword),
                       ),
                     ),
                   ],

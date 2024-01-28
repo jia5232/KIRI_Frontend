@@ -60,8 +60,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
             initialDateTime:
                 selectedDateTime.isBefore(now) ? now : selectedDateTime,
             minimumDate: now, // 최소 시간을 현재 시간으로 설정
-            maximumDate:
-                now.add(Duration(days: 1)), // 최대 하루 뒤까지 선택 가능하도록 설정
+            maximumDate: now.add(Duration(days: 1)), // 최대 하루 뒤까지 선택 가능하도록 설정
             onDateTimeChanged: (DateTime newDateTime) {
               setState(() {
                 selectedDateTime = newDateTime;
@@ -146,7 +145,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
                               onPressed: () {},
                               child: Text('선택하기'),
                               style: TextButton.styleFrom(
-                                  backgroundColor: Colors.grey[300],
+                                  backgroundColor:Colors.grey[200],
                                   foregroundColor: Colors.black,
                                   side: BorderSide(
                                     color: Colors.black,
@@ -190,7 +189,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
                               },
                               child: Text('선택'),
                               style: TextButton.styleFrom(
-                                  backgroundColor: Colors.grey[300],
+                                  backgroundColor: Colors.grey[200],
                                   foregroundColor: Colors.black,
                                   side: BorderSide(
                                     color: Colors.black,
@@ -268,7 +267,8 @@ class _PostFormScreenState extends State<PostFormScreen> {
                             child: TextFormField(
                               cursorColor: Colors.black,
                               onChanged: (value) {
-                                maxMember = value.isNotEmpty ? int.parse(value!) : 0;
+                                maxMember =
+                                    value.isNotEmpty ? int.parse(value!) : 0;
                               },
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -309,9 +309,12 @@ class _PostFormScreenState extends State<PostFormScreen> {
                           onPressed: () {
                             //posts/create으로 요청 보낼때 header에 accessToken 같이 보내야 됨
                             isFromSchool = fromSchool;
-                            String? depart = fromSchool ? "국민대학교" : station; //추후 사용자의 대학교명으로 변경 필요
+                            String? depart = fromSchool
+                                ? "국민대학교"
+                                : station; //추후 사용자의 대학교명으로 변경 필요
                             String? arrive = fromSchool ? station : "국민대학교";
-                            final formatDepartTime = departTime.toIso8601String();
+                            final formatDepartTime =
+                                departTime.toIso8601String();
                             //departTime, cost, maxMember, nowMembwe 이미 설정됨!!
                             print('isFromSchool: $isFromSchool');
                             print('depart: $depart');
@@ -321,9 +324,14 @@ class _PostFormScreenState extends State<PostFormScreen> {
                             print('maxMember: $maxMember');
                             print('nowMember: $nowMember');
                           },
-                          child: Text('등록하기'),
+                          child: Text(
+                            '등록하기',
+                            style: TextStyle(
+                              fontSize: 18.0,
+                            ),
+                          ),
                           style: TextButton.styleFrom(
-                              backgroundColor: Colors.grey[300],
+                              backgroundColor: Colors.grey[200],
                               foregroundColor: Colors.black,
                               side: BorderSide(
                                 color: Colors.black,
@@ -389,7 +397,7 @@ class _Notification extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: PRIMARY_COLOR),
         borderRadius:
             BorderRadius.all(Radius.circular(12.0)), //Dialog 내부 컨테이너의 border
       ),
