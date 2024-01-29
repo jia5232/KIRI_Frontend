@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart' hide Headers;
+import 'package:kiri/common/model/cursor_pagination_model.dart';
 import 'package:retrofit/http.dart';
 
 import '../model/post_model.dart';
@@ -11,12 +12,15 @@ abstract class PostRepository {
   //http://$ip/posts
   factory PostRepository(Dio dio, {String baseUrl}) = _PostRepository;
 
-  // @GET('/')
-  // paginate(
-  //     @Query('lastPostId') int lastPostId,
-  //     @Query('isFromSchool') bool isFromSchool,
-  //     @Query('searchKeyword') String? searchKeyword,
-  //     );
+  @GET('')
+  @Headers({
+    'accessToken': 'true',
+  })
+  Future<CursorPaginationModel<PostModel>> paginate(
+      @Query('lastPostId') int lastPostId,
+      @Query('isFromSchool') bool isFromSchool,
+      @Query('searchKeyword') String? searchKeyword,
+      );
 
   @GET('/{id}')
   @Headers({

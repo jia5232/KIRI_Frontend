@@ -28,26 +28,19 @@ class _PostScreenState extends State<PostScreen> {
   late List<bool> isSelected;
   String? searchKeyword = '';
 
-  Future<List> paginatePost(
+  Future<List<PostModel>> paginatePost(
       int lastPostId, bool isFromSchool, String? searchKeyWord) async {
     final dio = Dio();
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-    String url =
-        'http://$ip/posts?lastPostId=$lastPostId&isFromSchool=$isFromSchool';
-    if (searchKeyword != null && searchKeyword != '') {
-      url += '&searchKeyword=$searchKeyword';
-    }
-
-    final resp = await dio.get(
-      url,
-      options: Options(headers: {
-        'Authorization': 'Bearer $accessToken',
-      }),
+    dio.interceptors.add(
+        CustomInterceptor(storage),
     );
 
-    //resp.data -> http message body를 가져올 수 있음.
-    return resp.data['data'];
+    final repository = PostRepository(dio, baseUrl: "http://$ip/posts");
+    final resp = await repository.paginate(lastPostId, isFromSchool, searchKeyword);
+
+    //resp -> CursorPaginationModel을 받아오므로, 그 중에 data를 리턴해줘야함.
+    return resp.data;
   }
 
   Future<PostModel> getPostDetail(int id) async {
@@ -194,8 +187,9 @@ class _PostScreenState extends State<PostScreen> {
                     SizedBox(height: 12),
                     Container(
                       height: 500,
-                      child: FutureBuilder<List>(
-                        builder: (context, AsyncSnapshot<List> snapshot) {
+                      child: FutureBuilder<List<PostModel>>(
+                        future: paginatePost(10, fromSchool, searchKeyword),
+                        builder: (context, AsyncSnapshot<List<PostModel>> snapshot) {
                           if (!snapshot.hasData) {
                             return Container(
                               child: Text('no data'),
@@ -205,8 +199,7 @@ class _PostScreenState extends State<PostScreen> {
                           return ListView.separated(
                             itemCount: snapshot.data!.length,
                             itemBuilder: (_, index) {
-                              final item = snapshot.data![index];
-                              final pItem = PostModel.fromJson(item);
+                              final pItem = snapshot.data![index];
 
                               return GestureDetector(
                                 child: PostCard.fromModel(postModel: pItem),
@@ -235,7 +228,6 @@ class _PostScreenState extends State<PostScreen> {
                             },
                           );
                         },
-                        future: paginatePost(10, fromSchool, searchKeyword),
                       ),
                     ),
                   ],
