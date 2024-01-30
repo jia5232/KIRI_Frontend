@@ -6,15 +6,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
-import 'package:kiri/common/provider/dio_provider.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
 import 'package:kiri/post/model/post_model.dart';
 import 'package:kiri/post/provider/post_repository_provider.dart';
 import 'package:kiri/post/provider/post_screen_provider.dart';
-import 'package:kiri/post/repository/post_repository.dart';
+import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 
-import '../../common/const/data.dart';
 import '../component/post_card.dart';
 
 class PostScreen extends ConsumerWidget {
@@ -83,8 +81,12 @@ class PostScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ScrollController controller = ScrollController();
+
     bool fromSchool = ref.watch(fromSchoolProvider); //학교에서 출발
     String? searchKeyword = ref.watch(searchKeywordProvider);
+
+    final data = ref.watch(postStateNotifierProvider);
+    //postStateNotifierProvider가 postRepository에서 받아온 값을 그대로 돌려주므로 Future builder가 필요없어짐..
 
     double borderWidth = 1;
 
@@ -170,50 +172,35 @@ class PostScreen extends ConsumerWidget {
                     SizedBox(height: 12),
                     Container(
                       height: 500,
-                      child: FutureBuilder<CursorPaginationModel<PostModel>>(
-                        future: paginatePost(ref, 10, fromSchool, searchKeyword),
-                        builder: (context, AsyncSnapshot<CursorPaginationModel<PostModel>>snapshot) {
-                          if (!snapshot.hasData) {
-                            return Container(
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: PRIMARY_COLOR,
-                                ),
-                              ),
-                            );
-                          }
+                      child: ListView.separated(
+                        itemCount: data.length,
+                        itemBuilder: (_, index) {
+                          final pItem = data[index];
 
-                          return ListView.separated(
-                            itemCount: snapshot.data!.data.length,
-                            itemBuilder: (_, index) {
-                              final pItem = snapshot.data!.data[index];
+                          return GestureDetector(
+                            child: PostCard.fromModel(postModel: pItem),
+                            onTap: () async {
+                              //getPostDetail에서 api요청해서 가져오고, PostModel로 변환한다. (retrofit)
+                              final detailedPostModel =
+                                  await getPostDetail(ref, pItem.id);
 
-                              return GestureDetector(
-                                child: PostCard.fromModel(postModel: pItem),
-                                onTap: () async {
-                                  //getPostDetail에서 api요청해서 가져오고, PostModel로 변환한다. (retrofit)
-                                  final detailedPostModel =
-                                      await getPostDetail(ref, pItem.id);
-
-                                  showPopup(
-                                    context,
-                                    detailedPostModel.id,
-                                    detailedPostModel.isFromSchool,
-                                    detailedPostModel.depart,
-                                    detailedPostModel.arrive,
-                                    detailedPostModel.departTime,
-                                    detailedPostModel.maxMember,
-                                    detailedPostModel.nowMember,
-                                    detailedPostModel.cost,
-                                    detailedPostModel.isAuthor,
-                                  );
-                                },
+                              showPopup(
+                                context,
+                                detailedPostModel.id,
+                                detailedPostModel.isFromSchool,
+                                detailedPostModel.depart,
+                                detailedPostModel.arrive,
+                                detailedPostModel.departTime,
+                                detailedPostModel.maxMember,
+                                detailedPostModel.nowMember,
+                                detailedPostModel.cost,
+                                detailedPostModel.isAuthor,
                               );
                             },
-                            separatorBuilder: (_, index) {
-                              return SizedBox(height: 16.0);
-                            },
                           );
+                        },
+                        separatorBuilder: (_, index) {
+                          return SizedBox(height: 16.0);
                         },
                       ),
                     ),
