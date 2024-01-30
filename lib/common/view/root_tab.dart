@@ -51,25 +51,37 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         unselectedItemColor: BODY_TEXT_COLOR,
         selectedFontSize: 10.0,
         unselectedFontSize: 10.0,
-        type: BottomNavigationBarType.shifting,
-        onTap: (int index){
+        type: BottomNavigationBarType.fixed,
+        onTap: (int index) {
           controller.animateTo(index);
         },
         currentIndex: index,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_taxi),
+            icon: Icon(
+              Icons.local_taxi,
+              size: 30.0,
+            ),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
+            icon: Icon(
+              Icons.chat,
+              size: 30.0,
+            ),
             label: '채팅',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outlined),
+            icon: Icon(
+              Icons.person_outlined,
+              size: 30.0,
+            ),
             label: '마이페이지',
           ),
         ],
+        selectedLabelStyle: TextStyle(
+          fontSize: 12.0,
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:kiri/common/dio/secure_storage.dart';
 import 'package:kiri/user/view/signup_screen.dart';
 
 import '../../common/component/custom_text_form_field.dart';
@@ -86,24 +87,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     final refreshTokenArray = resp.headers['refreshToken'];
                     final accessTokenArray = resp.headers['accessToken'];
 
-                    final refreshToken = refreshTokenArray != null ? refreshTokenArray[0].substring("Bearer ".length) : null;
-                    final accessToken = accessTokenArray != null ? accessTokenArray[0].substring("Bearer ".length) : null;
+                    final refreshToken = refreshTokenArray != null
+                        ? refreshTokenArray[0].substring("Bearer ".length)
+                        : null;
+                    final accessToken = accessTokenArray != null
+                        ? accessTokenArray[0].substring("Bearer ".length)
+                        : null;
 
-
-                    if(refreshToken==null || accessToken==null){
+                    if (refreshToken == null || accessToken == null) {
                       print("token null!!!");
                     }
+                    
+                    final storage = ref.read(secureStorageProvider);
 
-                    await storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
-                    await storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
+                    await storage.write(
+                        key: REFRESH_TOKEN_KEY, value: refreshToken);
+                    await storage.write(
+                        key: ACCESS_TOKEN_KEY, value: accessToken);
 
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => RootTab(),
                       ),
                     );
-
-
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
@@ -113,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => SignupScreen(),

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:kiri/common/view/root_tab.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/view/splash_screen.dart';
-import 'package:kiri/user/view/login_screen.dart';
-import 'package:kiri/user/view/signup_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(_App());
+  runApp(
+    ProviderScope(
+      child: _App(),
+    ),
+  );
 }
 
 class _App extends StatelessWidget {
@@ -16,9 +21,18 @@ class _App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'NotoSans',
-        ),
+      ),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('ko', 'KR'), // Korean
+        // ... other locales your app supports
+      ],
       home: SplashScreen(),
-      );
+    );
   }
 }
