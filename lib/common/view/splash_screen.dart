@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/const/data.dart';
+import 'package:kiri/common/dio/secure_storage.dart';
+import 'package:kiri/common/provider/dio_provider.dart';
 import 'package:kiri/common/view/root_tab.dart';
 import 'package:kiri/user/view/signup_screen.dart';
 
@@ -8,15 +11,14 @@ import '../../user/view/login_screen.dart';
 import '../const/colors.dart';
 import '../layout/default_layout.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  final dio = Dio();
+class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   void initState() {
@@ -26,10 +28,13 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void deleteToken() async {
+    final storage = ref.read(secureStorageProvider);
     await storage.deleteAll();
   }
 
   void checkToken() async {
+    final dio = ref.read(dioProvider);
+    final storage = ref.read(secureStorageProvider);
     // 토큰 확인 필요
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);

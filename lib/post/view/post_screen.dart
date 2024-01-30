@@ -1,82 +1,58 @@
 import 'dart:math';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
-import 'package:kiri/common/dio/dio.dart';
 import 'package:kiri/common/layout/default_layout.dart';
+import 'package:kiri/common/model/cursor_pagination_model.dart';
+import 'package:kiri/common/provider/dio_provider.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
 import 'package:kiri/post/model/post_model.dart';
+import 'package:kiri/post/provider/post_repository_provider.dart';
+import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/repository/post_repository.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 
 import '../../common/const/data.dart';
 import '../component/post_card.dart';
 
-class PostScreen extends StatefulWidget {
+class PostScreen extends ConsumerWidget {
   const PostScreen({super.key});
 
-  @override
-  State<PostScreen> createState() => _PostScreenState();
-}
+  Future<CursorPaginationModel<PostModel>> paginatePost(WidgetRef ref,
+      int lastPostId, bool isFromSchool, String? searchKeyword) async {
+    final resp = ref
+        .watch(postRepositoryProvider)
+        .paginate(lastPostId, isFromSchool, searchKeyword);
 
-class _PostScreenState extends State<PostScreen> {
-  final ScrollController controller = ScrollController();
-  bool fromSchool = true; //학교에서 출발
-  bool toSchool = false; //학교로 도착
-  late List<bool> isSelected;
-  String? searchKeyword = '';
-
-  Future<List<PostModel>> paginatePost(
-      int lastPostId, bool isFromSchool, String? searchKeyWord) async {
-    final dio = Dio();
-
-    dio.interceptors.add(
-        CustomInterceptor(storage),
-    );
-
-    final repository = PostRepository(dio, baseUrl: "http://$ip/posts");
-    final resp = await repository.paginate(lastPostId, isFromSchool, searchKeyword);
-
-    //resp -> CursorPaginationModel을 받아오므로, 그 중에 data를 리턴해줘야함.
-    return resp.data;
+    //resp -> CursorPaginationModel을 받아온다.
+    return resp;
   }
 
-  Future<PostModel> getPostDetail(int id) async {
-    final dio = Dio();
-
-    dio.interceptors.add(
-      CustomInterceptor(storage),
-    );
-
-    final repository = PostRepository(dio, baseUrl: "http://$ip/posts");
-    return repository.getPostDetail(id: id);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    isSelected = [fromSchool, toSchool];
+  Future<PostModel> getPostDetail(WidgetRef ref, int id) async {
+    return ref.watch(postRepositoryProvider).getPostDetail(
+          id: id,
+        );
   }
 
   // void scrollListener(){
   //
   // }
 
-  void toggleSelect(value) {
+  void toggleSelect(
+      WidgetRef ref, int value, bool fromSchool, String? searchKeyword) {
     if (value == 0) {
-      fromSchool = true;
-      toSchool = false;
+      ref.read(fromSchoolProvider.notifier).state = true;
     } else {
-      fromSchool = false;
-      toSchool = true;
+      ref.read(fromSchoolProvider.notifier).state = false;
     }
-    setState(() {
-      isSelected = [fromSchool, toSchool];
-      //pagenate 요청 다시 불러오기
-      paginatePost(20, fromSchool, searchKeyword);
-    });
+    //pagenate 요청 다시 불러오기!!!!!
+    paginatePost(ref, 20, fromSchool, searchKeyword);
+  }
+
+  void updateSearchKeyword(WidgetRef ref, String? newKeyword) {
+    ref.read(searchKeywordProvider.notifier).state = newKeyword;
   }
 
   void showPopup(context, id, isFromSchool, depart, arrive, departTime,
@@ -105,11 +81,16 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ScrollController controller = ScrollController();
+    bool fromSchool = ref.watch(fromSchoolProvider); //학교에서 출발
+    String? searchKeyword = ref.watch(searchKeywordProvider);
+
     double borderWidth = 1;
 
     return DefaultLayout(
       child: SingleChildScrollView(
+        controller: controller,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: SafeArea(
           child: Column(
@@ -126,8 +107,12 @@ class _PostScreenState extends State<PostScreen> {
                     child: Text('학교로 도착'),
                   ),
                 ],
-                isSelected: isSelected,
-                onPressed: toggleSelect,
+                isSelected: [
+                  ref.watch(fromSchoolProvider),
+                  !ref.watch(fromSchoolProvider),
+                ],
+                onPressed: (value) =>
+                    toggleSelect(ref, value, fromSchool, searchKeyword),
                 borderColor: Colors.grey[300],
                 borderWidth: borderWidth,
                 selectedBorderColor: Colors.black,
@@ -162,9 +147,7 @@ class _PostScreenState extends State<PostScreen> {
                           ),
                           color: PRIMARY_COLOR,
                           onPressed: () {
-                            setState(() {
-                              paginatePost(20, fromSchool, searchKeyword);
-                            });
+                            paginatePost(ref, 20, fromSchool, searchKeyword);
                           },
                         ),
                         enabledBorder: OutlineInputBorder(
@@ -181,32 +164,36 @@ class _PostScreenState extends State<PostScreen> {
                         ),
                       ),
                       onChanged: (String value) {
-                        searchKeyword = value;
+                        updateSearchKeyword(ref, value);
                       },
                     ),
                     SizedBox(height: 12),
                     Container(
                       height: 500,
-                      child: FutureBuilder<List<PostModel>>(
-                        future: paginatePost(10, fromSchool, searchKeyword),
-                        builder: (context, AsyncSnapshot<List<PostModel>> snapshot) {
+                      child: FutureBuilder<CursorPaginationModel<PostModel>>(
+                        future: paginatePost(ref, 10, fromSchool, searchKeyword),
+                        builder: (context, AsyncSnapshot<CursorPaginationModel<PostModel>>snapshot) {
                           if (!snapshot.hasData) {
                             return Container(
-                              child: Text('no data'),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: PRIMARY_COLOR,
+                                ),
+                              ),
                             );
                           }
 
                           return ListView.separated(
-                            itemCount: snapshot.data!.length,
+                            itemCount: snapshot.data!.data.length,
                             itemBuilder: (_, index) {
-                              final pItem = snapshot.data![index];
+                              final pItem = snapshot.data!.data[index];
 
                               return GestureDetector(
                                 child: PostCard.fromModel(postModel: pItem),
                                 onTap: () async {
                                   //getPostDetail에서 api요청해서 가져오고, PostModel로 변환한다. (retrofit)
                                   final detailedPostModel =
-                                      await getPostDetail(pItem.id);
+                                      await getPostDetail(ref, pItem.id);
 
                                   showPopup(
                                     context,
@@ -241,14 +228,9 @@ class _PostScreenState extends State<PostScreen> {
   }
 }
 
-class _Top extends StatefulWidget {
+class _Top extends StatelessWidget {
   const _Top({super.key});
 
-  @override
-  State<_Top> createState() => _TopState();
-}
-
-class _TopState extends State<_Top> {
   @override
   Widget build(BuildContext context) {
     return Container(

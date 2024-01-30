@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/view/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(_App());
+  runApp(
+    ProviderScope(
+      child: _App(),
+    ),
+  );
 }
 
 class _App extends StatelessWidget {
@@ -16,7 +21,7 @@ class _App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'NotoSans',
-        ),
+      ),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -28,6 +33,6 @@ class _App extends StatelessWidget {
         // ... other locales your app supports
       ],
       home: SplashScreen(),
-      );
+    );
   }
 }
