@@ -4,34 +4,37 @@ import 'package:kiri/common/const/data.dart';
 
 class CustomInterceptor extends Interceptor {
   final FlutterSecureStorage storage;
+  final Dio dio;
 
   CustomInterceptor(
     this.storage,
+    this.dio,
   );
 
   // 1) 요청을 보낼 때
   // 요청이 보내질때마다 요청 Header에 accessToken: true라는 값이 있다면 실제 토큰을 스토리지에서 가져와서 담아서 보내준다.
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     print('[REQ] [${options.method}] [${options.uri}]');
 
-    if(options.headers['accessToken']=='true'){
+    if (options.headers['accessToken'] == 'true') {
       options.headers.remove('accessToken'); //헤더 삭제
 
       final token = await storage.read(key: ACCESS_TOKEN_KEY);
 
       options.headers.addAll({
-        'Authorization' : 'Bearer $token', //실제 토큰으로 대체
+        'Authorization': 'Bearer $token', //실제 토큰으로 대체
       });
     }
 
-    if(options.headers['refreshToken']=='true'){
+    if (options.headers['refreshToken'] == 'true') {
       options.headers.remove('refreshToken'); //헤더 삭제
 
       final token = await storage.read(key: REFRESH_TOKEN_KEY);
 
       options.headers.addAll({
-        'Authorization' : 'Bearer $token', //실제 토큰으로 대체
+        'Authorization': 'Bearer $token', //실제 토큰으로 대체
       });
     }
 
@@ -41,7 +44,8 @@ class CustomInterceptor extends Interceptor {
   // 2) 응답을 받을 때
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print('[RES] [${response.requestOptions.method}] [${response.requestOptions.uri}]');
+    print(
+        '[RES] [${response.requestOptions.method}] [${response.requestOptions.uri}]');
     return super.onResponse(response, handler);
   }
 
@@ -55,7 +59,7 @@ class CustomInterceptor extends Interceptor {
 
     // refreshToken이 아예 없으면 에러를 던진다.
     // 에러를 던질때는 handler.reject를 사용한다.
-    if(refreshToken == null){
+    if (refreshToken == null) {
       return handler.reject(err);
     }
 
@@ -65,9 +69,9 @@ class CustomInterceptor extends Interceptor {
     final isPathRefresh = err.requestOptions.path == '/token';
 
     // 토큰 에러가 맞고 새로 발급받으려다가 에러가 난건 아니다. -> 토큰을 새로 발급받으면 된다.
-    if(isStatus401 && !isPathRefresh){
-      final dio = Dio();
-      try{
+    if (isStatus401 && !isPathRefresh) {
+      // final dio = Dio(); //여기가 문제인가...? (postScreen 문제 고치는중)
+      try {
         final resp = await dio.post(
           'http://$ip/token',
           options: Options(
@@ -107,8 +111,7 @@ class CustomInterceptor extends Interceptor {
 
         // 요청 재전송이 성공적으로 끝났으면
         return handler.resolve(response);
-
-      }on DioException catch(e){
+      } on DioException catch (e) {
         return handler.reject(e);
       }
     }

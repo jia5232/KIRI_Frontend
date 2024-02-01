@@ -5,7 +5,6 @@ import 'package:kiri/common/const/data.dart';
 import 'package:kiri/common/dio/secure_storage.dart';
 import 'package:kiri/common/provider/dio_provider.dart';
 import 'package:kiri/common/view/root_tab.dart';
-import 'package:kiri/user/view/signup_screen.dart';
 
 import '../../user/view/login_screen.dart';
 import '../const/colors.dart';
