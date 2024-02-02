@@ -83,7 +83,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
 
     //TextFormField border style!!
     final baseBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.circular(10.0),
       borderSide: BorderSide(
         color: Colors.black,
         width: 1.0,
@@ -116,6 +116,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
                   isSelected: isSelected,
                   onPressed: toggleSelect,
                   borderColor: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10.0),
                   borderWidth: 1,
                   selectedBorderColor: Colors.black,
                   fillColor: Colors.transparent,
@@ -140,17 +141,28 @@ class _PostFormScreenState extends State<PostFormScreen> {
                           ),
                           SizedBox(width: 40),
                           SizedBox(
-                            width: 180,
+                            width: 180.0,
                             child: TextButton(
-                              onPressed: () {},
-                              child: Text('선택하기'),
-                              style: TextButton.styleFrom(
-                                  backgroundColor:Colors.grey[200],
-                                  foregroundColor: Colors.black,
-                                  side: BorderSide(
+                              style: ButtonStyle(
+                                side: MaterialStateProperty.all(
+                                  BorderSide(
                                     color: Colors.black,
+                                    width: 1.0,
                                   ),
-                                  shape: ContinuousRectangleBorder()),
+                                ),
+                                backgroundColor:
+                                    MaterialStateProperty.all(Colors.grey[200]),
+                                foregroundColor:
+                                    MaterialStateProperty.all(Colors.black),
+                                shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10.0), // Adjust the border radius here
+                                  ),
+                                ),
+                              ),
+                              onPressed: () {},
+                              child: Text("선택하기"),
                             ),
                           ),
                         ],
@@ -165,10 +177,19 @@ class _PostFormScreenState extends State<PostFormScreen> {
                           SizedBox(width: 34),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
+                              border: BorderDirectional(
+                                top: BorderSide(color: Colors.black),
+                                start: BorderSide(color: Colors.black),
+                                bottom: BorderSide(color: Colors.black),
+                                end: BorderSide(color: Colors.black, width: 0.0),
+                              ),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(10.0),
+                                bottomLeft: Radius.circular(10.0),
+                              ),
                             ),
                             width: 120,
-                            height: 37,
+                            height: 36,
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
                               child: Text(
@@ -188,13 +209,26 @@ class _PostFormScreenState extends State<PostFormScreen> {
                                 _showCupertinoDateTimePicker(context);
                               },
                               child: Text('선택'),
-                              style: TextButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  foregroundColor: Colors.black,
-                                  side: BorderSide(
+                              style: ButtonStyle(
+                                side: MaterialStateProperty.all(
+                                  BorderSide(
                                     color: Colors.black,
+                                    width: 1.0,
                                   ),
-                                  shape: ContinuousRectangleBorder()),
+                                ),
+                                backgroundColor:
+                                    MaterialStateProperty.all(Colors.grey[200]),
+                                foregroundColor:
+                                    MaterialStateProperty.all(Colors.black),
+                                shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(10.0),
+                                      bottomRight: Radius.circular(10.0),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -330,13 +364,24 @@ class _PostFormScreenState extends State<PostFormScreen> {
                               fontSize: 18.0,
                             ),
                           ),
-                          style: TextButton.styleFrom(
-                              backgroundColor: Colors.grey[200],
-                              foregroundColor: Colors.black,
-                              side: BorderSide(
+                          style: ButtonStyle(
+                            side: MaterialStateProperty.all(
+                              BorderSide(
                                 color: Colors.black,
+                                width: 1.0,
                               ),
-                              shape: ContinuousRectangleBorder()),
+                            ),
+                            backgroundColor:
+                            MaterialStateProperty.all(Colors.grey[200]),
+                            foregroundColor:
+                            MaterialStateProperty.all(Colors.black),
+                            shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    10.0), // Adjust the border radius here
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -397,7 +442,7 @@ class _Notification extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        border: Border.all(color: PRIMARY_COLOR),
+        border: Border.all(color: Colors.black),
         borderRadius:
             BorderRadius.all(Radius.circular(12.0)), //Dialog 내부 컨테이너의 border
       ),

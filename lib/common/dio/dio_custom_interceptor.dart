@@ -54,6 +54,8 @@ class CustomInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     // 401 에러가 났을 때 -> 토큰을 재발급받는 시도를 하고, 토큰이 재발급되면 다시 새로운 토큰으로 요청을 한다.
     print('[ERR] [${err.requestOptions.method}] [${err.requestOptions.uri}]');
+    print('에러메시지: ${err.message}');
+    print('헤더: ${err.requestOptions.headers}');
 
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
 
@@ -68,9 +70,18 @@ class CustomInterceptor extends Interceptor {
     // 토큰을 새로 발급받으려다가 에러가 난거라면 refreshToken 자체에 문제가 있다!
     final isPathRefresh = err.requestOptions.path == '/token';
 
+    // if(isPathRefresh){ //토큰 재발급하다가 오류난거면 로그인 페이지로..
+    //   Navigator.of(context).push(
+    //     MaterialPageRoute(
+    //       builder: (_) => LoginScreen(),
+    //     ),
+    //   );
+    // }
+
     // 토큰 에러가 맞고 새로 발급받으려다가 에러가 난건 아니다. -> 토큰을 새로 발급받으면 된다.
     if (isStatus401 && !isPathRefresh) {
-      // final dio = Dio(); //여기가 문제인가...? (postScreen 문제 고치는중)
+      final dio = Dio();
+      print('보내는 refreshToken: $refreshToken');
       try {
         final resp = await dio.post(
           'http://$ip/token',
@@ -91,6 +102,9 @@ class CustomInterceptor extends Interceptor {
         final newAccessToken = accessTokenArray != null
             ? accessTokenArray[0].substring("Bearer ".length)
             : null;
+
+        print('받은 refreshToken: $newRefreshToken');
+        print('받은 accessToken: $newAccessToken');
 
         if (newRefreshToken == null || newAccessToken == null) {
           print("token null!!!");

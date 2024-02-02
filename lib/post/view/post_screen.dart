@@ -12,6 +12,7 @@ import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 
+import '../../user/view/login_screen.dart';
 import '../component/post_card.dart';
 
 class PostScreen extends ConsumerStatefulWidget {
@@ -26,11 +27,6 @@ class _PostScreenState extends ConsumerState<PostScreen> {
 
   void toggleSelect(WidgetRef ref, int value) {
     ref.read(fromSchoolProvider.notifier).state = value == 0;
-    ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
-  }
-
-  void updateSearchKeyword(WidgetRef ref, String? newKeyword) {
-    ref.read(searchKeywordProvider.notifier).state = newKeyword;
     ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
   }
 
@@ -114,6 +110,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
       child: Column(
         children: [
           TextFormField(
+            cursorColor: PRIMARY_COLOR,
             decoration: InputDecoration(
               hintText: fromSchool ? '도착지를 입력해주세요.' : '출발지를 입력해주세요.',
               hintStyle: TextStyle(
@@ -130,9 +127,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                 ),
                 color: PRIMARY_COLOR,
                 onPressed: () {
-                  ref
-                      .read(postStateNotifierProvider.notifier)
-                      .paginate(forceRefetch: true);
+                  ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
                 },
               ),
               enabledBorder: OutlineInputBorder(
@@ -149,7 +144,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
               ),
             ),
             onChanged: (String value) {
-              updateSearchKeyword(ref, value);
+              ref.read(searchKeywordProvider.notifier).state = value;
             },
           ),
         ],
@@ -171,8 +166,17 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     }
 
     if (data is CursorPaginationModelError) {
+      //에러나면 일단 로그인 페이지로 돌려보냄 (현재 상태에서는 토큰 만료 오류이기 때문)
+      // Future.microtask(() {
+      //   Navigator.of(context).push(
+      //     MaterialPageRoute(
+      //       builder: (_) => LoginScreen(),
+      //     ),
+      //   );
+      // });
+
       return Center(
-        child: Text(data.message),
+        child: Text("데이터를 불러올 수 없습니다."),
       );
     }
 
@@ -190,7 +194,13 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                   ? CircularProgressIndicator(
                       color: PRIMARY_COLOR,
                     )
-                  : Text('마지막 데이터입니다.'),
+                  : Text(
+                      'Copyright 2024. JiaKwon all rights reserved.\n',
+                      style: TextStyle(
+                        color: BODY_TEXT_COLOR,
+                        fontSize: 12.0,
+                      ),
+                    ),
             );
           }
 
@@ -199,7 +209,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           return GestureDetector(
             child: PostCard.fromModel(postModel: pItem),
             onTap: () async {
-              final detailedPostModel = await ref.read(postRepositoryProvider).getPostDetail(id: pItem.id);
+              final detailedPostModel = await ref
+                  .read(postRepositoryProvider)
+                  .getPostDetail(id: pItem.id);
               //getPostDetail에서 api요청해서 가져오고, PostModel로 변환한다. (retrofit)
               // final detailedPostModel = await getPostDetail(ref, pItem.id);
               showDialog(

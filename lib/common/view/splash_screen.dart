@@ -32,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   void checkToken() async {
-    final dio = ref.read(dioProvider);
+    final dio = Dio();
     final storage = ref.read(secureStorageProvider);
     // 토큰 확인 필요
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);

@@ -151,6 +151,8 @@ class PostStateNotifier extends StateNotifier<CursorPaginationModelBase> {
       // 세번째 확인 -> 에러 발생 후
       if (!isMounted) return;
 
+      print(e.runtimeType);
+
       state = CursorPaginationModelError(message: '데이터를 가져오지 못했습니다');
     }
   }
