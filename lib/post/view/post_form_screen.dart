@@ -181,7 +181,8 @@ class _PostFormScreenState extends State<PostFormScreen> {
                                 top: BorderSide(color: Colors.black),
                                 start: BorderSide(color: Colors.black),
                                 bottom: BorderSide(color: Colors.black),
-                                end: BorderSide(color: Colors.black, width: 0.0),
+                                end:
+                                    BorderSide(color: Colors.black, width: 0.0),
                               ),
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(10.0),
@@ -372,9 +373,9 @@ class _PostFormScreenState extends State<PostFormScreen> {
                               ),
                             ),
                             backgroundColor:
-                            MaterialStateProperty.all(Colors.grey[200]),
+                                MaterialStateProperty.all(Colors.grey[200]),
                             foregroundColor:
-                            MaterialStateProperty.all(Colors.black),
+                                MaterialStateProperty.all(Colors.black),
                             shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
@@ -439,6 +440,10 @@ class _Notification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      fontSize: 14.0,
+    );
+
     return Container(
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -451,20 +456,36 @@ class _Notification extends StatelessWidget {
         children: [
           Text(
             '방장 안내사항',
-            style: TextStyle(fontSize: 16.0),
+            style: TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           SizedBox(height: 16.0),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('1. 도착지/출발지 및 관련 정보를 정확히 기재해주세요.'),
-              SizedBox(height: 8.0),
-              Text('2. 약속 시간 5분 전까지는 모두 정해진 장소로 모여주세요.'),
-              SizedBox(height: 8.0),
-              Text('3. 택시 호출 및 정산은 만나서 진행해주세요.'),
+              Text(
+                '1. 도착지/출발지 및 관련 정보를 정확히 기재해주세요.',
+                style: textStyle,
+              ),
               SizedBox(height: 8.0),
               Text(
-                  '4. 학교 웹메일 인증하에 운영되므로 부적절한 사건 발생시 민형사상 처벌을 받을 수 있음에 유의바랍니다.'),
+                '2. 약속 시간 5분 전까지는 모두 정해진 장소로 모여주세요.',
+                style: textStyle,
+              ),
+              SizedBox(height: 8.0),
+              Text(
+                '3. 택시 호출 및 정산은 만나서 진행해주세요.',
+                style: textStyle,
+              ),
+              SizedBox(
+                height: 8.0,
+              ),
+              Text(
+                '4. 학교 웹메일 인증하에 운영되므로 부적절한 사건 발생시 민형사상 처벌을 받을 수 있음에 유의바랍니다.',
+                style: textStyle,
+              ),
             ],
           ),
         ],

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kiri/common/dio/secure_storage.dart';
-import 'package:kiri/user/view/signup_screen.dart';
+import 'package:kiri/member/view/signup_screen.dart';
 
 import '../../common/component/custom_text_form_field.dart';
 import '../../common/const/colors.dart';
@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (refreshToken == null || accessToken == null) {
                       print("token null!!!");
                     }
-                    
+
                     final storage = ref.read(secureStorageProvider);
 
                     await storage.write(
@@ -126,8 +126,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     );
                   },
-                  style: TextButton.styleFrom(
-                    foregroundColor: PRIMARY_COLOR,
+                  style: ButtonStyle(
+                    foregroundColor:
+                    MaterialStateProperty.all(PRIMARY_COLOR),
+                    side: MaterialStateProperty.all(
+                      BorderSide(
+                        color: PRIMARY_COLOR,
+                        width: 1.0,
+                      ),
+                    ),
                   ),
                   child: Text('회원가입'),
                 ),

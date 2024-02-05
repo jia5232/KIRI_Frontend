@@ -12,7 +12,7 @@ import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 
-import '../../user/view/login_screen.dart';
+import '../../member/view/login_screen.dart';
 import '../component/post_card.dart';
 
 class PostScreen extends ConsumerStatefulWidget {
