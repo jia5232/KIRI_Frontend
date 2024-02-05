@@ -9,6 +9,7 @@ import 'package:kiri/member/view/login_screen.dart';
 import '../../common/const/data.dart';
 
 class SignupScreen extends StatefulWidget {
+
   const SignupScreen({super.key});
 
   @override

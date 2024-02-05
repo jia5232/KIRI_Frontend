@@ -1,13 +1,17 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kiri/common/const/data.dart';
+import 'package:kiri/member/provider/auth_provider.dart';
 
 class CustomInterceptor extends Interceptor {
   final FlutterSecureStorage storage;
+  final Ref ref;
   final Dio dio;
 
   CustomInterceptor(
     this.storage,
+    this.ref,
     this.dio,
   );
 
@@ -70,13 +74,6 @@ class CustomInterceptor extends Interceptor {
     // 토큰을 새로 발급받으려다가 에러가 난거라면 refreshToken 자체에 문제가 있다!
     final isPathRefresh = err.requestOptions.path == '/token';
 
-    // if(isPathRefresh){ //토큰 재발급하다가 오류난거면 로그인 페이지로..
-    //   Navigator.of(context).push(
-    //     MaterialPageRoute(
-    //       builder: (_) => LoginScreen(),
-    //     ),
-    //   );
-    // }
 
     // 토큰 에러가 맞고 새로 발급받으려다가 에러가 난건 아니다. -> 토큰을 새로 발급받으면 된다.
     if (isStatus401 && !isPathRefresh) {
@@ -93,14 +90,14 @@ class CustomInterceptor extends Interceptor {
         );
 
         // 새로 받아온 accessToken, refreshToken을 스토리지에 저장
-        final refreshTokenArray = resp.headers['refreshToken'];
-        final accessTokenArray = resp.headers['accessToken'];
+        final refreshTokenArray = resp.data['refreshToken'];
+        final accessTokenArray = resp.data['accessToken'];
 
         final newRefreshToken = refreshTokenArray != null
-            ? refreshTokenArray[0].substring("Bearer ".length)
+            ? refreshTokenArray!.substring("Bearer ".length)
             : null;
         final newAccessToken = accessTokenArray != null
-            ? accessTokenArray[0].substring("Bearer ".length)
+            ? accessTokenArray!.substring("Bearer ".length)
             : null;
 
         print('받은 refreshToken: $newRefreshToken');
@@ -126,6 +123,10 @@ class CustomInterceptor extends Interceptor {
         // 요청 재전송이 성공적으로 끝났으면
         return handler.resolve(response);
       } on DioException catch (e) {
+        // memberStateNotifierProvider가 dio에 의존하므로
+        // memberStateNotifierProvider를 참조하면 circular dependency error
+        // 따라서 authProvider를 참조한다.
+        ref.read(authProvider.notifier).logout();
         return handler.reject(e);
       }
     }
