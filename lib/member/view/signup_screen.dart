@@ -4,11 +4,12 @@ import 'package:kiri/common/component/custom_text_form_field.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/view/splash_screen.dart';
-import 'package:kiri/user/view/login_screen.dart';
+import 'package:kiri/member/view/login_screen.dart';
 
 import '../../common/const/data.dart';
 
 class SignupScreen extends StatefulWidget {
+
   const SignupScreen({super.key});
 
   @override
@@ -60,15 +61,28 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: 10.0),
-                Center(
-                  child: Text(
-                    'SIGNUP',
-                    style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(
+                        Icons.chevron_left,
+                        color: PRIMARY_COLOR,
+                      ),
                     ),
-                  ),
+                    SizedBox(width: MediaQuery.of(context).size.width / 2 - 85),
+                    Text(
+                      'KIRI',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w500,
+                        color: PRIMARY_COLOR,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 20.0),
                 Text('학교'),
@@ -301,7 +315,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         isEmailAuthenticated) {
                       // 회원가입 api 요청..
 
-                      try{
+                      try {
                         final resp = await dio.post(
                           'http://$ip/signup',
                           data: {
@@ -321,14 +335,14 @@ class _SignupScreenState extends State<SignupScreen> {
                             builder: (_) => LoginScreen(),
                           ),
                         );
-                      } catch(e){ //서버에서 넘긴 에러를 모달로 띄워줘야 한다.
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => SignupScreen(),
-                          ),
-                        );
+                      } catch (e) {
+                        //서버에서 넘긴 에러를 모달로 띄워줘야 한다.
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => SignupScreen(),
+                        //   ),
+                        // );
                       }
-
                     }
                   },
                   child: Text('회원가입하기'),

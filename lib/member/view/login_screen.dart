@@ -1,19 +1,15 @@
-import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:kiri/common/dio/secure_storage.dart';
-import 'package:kiri/user/view/signup_screen.dart';
-
+import 'package:kiri/member/model/member_model.dart';
+import 'package:kiri/member/provider/member_state_notifier_provider.dart';
+import 'package:kiri/member/view/signup_screen.dart';
 import '../../common/component/custom_text_form_field.dart';
 import '../../common/const/colors.dart';
-import '../../common/const/data.dart';
 import '../../common/layout/default_layout.dart';
-import '../../common/view/root_tab.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'login';
+
   const LoginScreen({super.key});
 
   @override
@@ -26,7 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
+    final state = ref.watch(memberStateNotifierProvider);
 
     return DefaultLayout(
       child: SingleChildScrollView(
@@ -75,42 +71,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
-                  onPressed: () async {
-                    final resp = await dio.post(
-                      'http://$ip/login',
-                      data: {'email': email, 'password': password},
-                      options: Options(
-                        headers: {'Content-Type': 'application/json'},
-                      ),
-                    );
-
-                    final refreshTokenArray = resp.headers['refreshToken'];
-                    final accessTokenArray = resp.headers['accessToken'];
-
-                    final refreshToken = refreshTokenArray != null
-                        ? refreshTokenArray[0].substring("Bearer ".length)
-                        : null;
-                    final accessToken = accessTokenArray != null
-                        ? accessTokenArray[0].substring("Bearer ".length)
-                        : null;
-
-                    if (refreshToken == null || accessToken == null) {
-                      print("token null!!!");
-                    }
-                    
-                    final storage = ref.read(secureStorageProvider);
-
-                    await storage.write(
-                        key: REFRESH_TOKEN_KEY, value: refreshToken);
-                    await storage.write(
-                        key: ACCESS_TOKEN_KEY, value: accessToken);
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => RootTab(),
-                      ),
-                    );
-                  },
+                  onPressed: state is MemberModelLoading //로딩중이면 로그인버튼 못누르도록
+                      ? null
+                      : () async {
+                          ref
+                              .read(memberStateNotifierProvider.notifier)
+                              .login(email: email, password: password);
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
                   ),
@@ -119,15 +86,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: state is MemberModelLoading //로딩중이면 회원가입 버튼 못누르도록
+                      ? null
+                      : () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => SignupScreen(),
                       ),
                     );
                   },
-                  style: TextButton.styleFrom(
-                    foregroundColor: PRIMARY_COLOR,
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all(PRIMARY_COLOR),
+                    side: MaterialStateProperty.all(
+                      BorderSide(
+                        color: PRIMARY_COLOR,
+                        width: 1.0,
+                      ),
+                    ),
                   ),
                   child: Text('회원가입'),
                 ),

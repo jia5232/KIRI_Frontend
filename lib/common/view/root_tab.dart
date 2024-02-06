@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/view/post_screen.dart';
 
+import '../../member/view/mypage_screen.dart';
 import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
+  static String get routeName => 'home';
+
   const RootTab({super.key});
 
   @override
@@ -43,7 +46,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         children: [
           PostScreen(),
           Center(child: Container(child: Text("채팅"))),
-          Center(child: Container(child: Text("마이페이지"))),
+          MyPageScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
