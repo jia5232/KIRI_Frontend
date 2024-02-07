@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiri/member/model/member_model.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
 import 'package:kiri/member/view/signup_screen.dart';
@@ -71,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
-                  onPressed: state is MemberModelLoading //로딩중이면 로그인버튼 못누르도록
+                  onPressed: state is MemberModelLoading //로딩중이면 로그인 버튼 못누르도록
                       ? null
                       : () async {
                           ref

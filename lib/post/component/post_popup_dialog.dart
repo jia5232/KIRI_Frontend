@@ -3,7 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 
 class PostPopupDialog extends StatelessWidget {
-  final int id;
   final bool isFromSchool;
   final String depart;
   final String arrive;
@@ -16,7 +15,6 @@ class PostPopupDialog extends StatelessWidget {
   final VoidCallback deleteOnPressed;
 
   const PostPopupDialog({
-    required this.id,
     required this.isFromSchool,
     required this.depart,
     required this.arrive,

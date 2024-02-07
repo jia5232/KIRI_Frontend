@@ -127,7 +127,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                 ),
                 color: PRIMARY_COLOR,
                 onPressed: () {
-                  ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
+                  ref
+                      .read(postStateNotifierProvider.notifier)
+                      .paginate(forceRefetch: true);
                 },
               ),
               enabledBorder: OutlineInputBorder(
@@ -215,26 +217,26 @@ class _PostScreenState extends ConsumerState<PostScreen> {
               //getPostDetail에서 api요청해서 가져오고, PostModel로 변환한다. (retrofit)
               // final detailedPostModel = await getPostDetail(ref, pItem.id);
               showDialog(
-                  context: context,
-                  builder: (context) {
-                    return PostPopupDialog(
-                      id: detailedPostModel.id,
-                      isFromSchool: detailedPostModel.isFromSchool,
-                      depart: detailedPostModel.depart,
-                      arrive: detailedPostModel.arrive,
-                      departTime: detailedPostModel.departTime,
-                      maxMember: detailedPostModel.maxMember,
-                      nowMember: detailedPostModel.nowMember,
-                      cost: detailedPostModel.cost,
-                      isAuthor: detailedPostModel.isAuthor,
-                      joinOnPressed: () {
-                        print('join button clicked!');
-                      },
-                      deleteOnPressed: () {
-                        print('delete button clicked!');
-                      },
-                    );
-                  });
+                context: context,
+                builder: (context) {
+                  return PostPopupDialog(
+                    isFromSchool: detailedPostModel.isFromSchool,
+                    depart: detailedPostModel.depart,
+                    arrive: detailedPostModel.arrive,
+                    departTime: detailedPostModel.departTime,
+                    maxMember: detailedPostModel.maxMember,
+                    nowMember: detailedPostModel.nowMember,
+                    cost: detailedPostModel.cost,
+                    isAuthor: detailedPostModel.isAuthor,
+                    joinOnPressed: () {
+                      print('join button clicked!');
+                    },
+                    deleteOnPressed: () {
+                      print('delete button clicked!');
+                    },
+                  );
+                },
+              );
             },
           );
         },
