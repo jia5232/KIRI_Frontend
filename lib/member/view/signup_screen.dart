@@ -39,7 +39,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool isPasswordNull = true;
   bool isPasswordDifferent = false;
   bool isNicknameNull = true;
-  bool isNicknameDuplicated = false; //true로 두고 닉네임 중복 작업해야 함.
+  bool isNicknameDuplicated = true; //true로 두고 닉네임 중복 작업해야 함.
 
   @override
   void initState() {
@@ -145,6 +145,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        isInputEnabled: isEmailAuthenticated ? false : true,
                         suffixText: email_suffix[univName] == null
                             ? ''
                             : email_suffix[univName],
@@ -167,7 +168,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         backgroundColor: PRIMARY_COLOR,
                         // minimumSize:,
                       ),
-                      onPressed: isEmailNull
+                      onPressed: (isEmailNull || isEmailAuthenticated)
                           ? null
                           : () async {
                               // 인증번호 전송 api
@@ -207,6 +208,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        isInputEnabled: isEmailAuthenticated ? false : true,
                         hintText: '인증번호 입력',
                         onChanged: (String value) {
                           setState(() {
@@ -220,16 +222,22 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
                       ),
-                      onPressed: () {
-                        isEmailAuthenticated =
-                            authNumber == inputAuthNumber ? true : false;
+                      onPressed: isEmailAuthenticated
+                          ? null
+                          : () {
+                              setState(() {
+                                isEmailAuthenticated =
+                                    authNumber == inputAuthNumber
+                                        ? true
+                                        : false;
+                              });
 
-                        if (isEmailAuthenticated) {
-                          getNoticeDialog(context, '인증번호가 일치합니다.');
-                        } else {
-                          getNoticeDialog(context, '인증번호가 일치하지 않습니다.');
-                        }
-                      },
+                              if (isEmailAuthenticated) {
+                                getNoticeDialog(context, '인증번호가 일치합니다.');
+                              } else {
+                                getNoticeDialog(context, '인증번호가 일치하지 않습니다.');
+                              }
+                            },
                       child: Text('확인'),
                     ),
                   ],
@@ -242,6 +250,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        isInputEnabled: isNicknameDuplicated ? true : false,
                         hintText: '닉네임 입력',
                         onChanged: (String value) {
                           nickname = value;
@@ -256,7 +265,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
                       ),
-                      onPressed: isNicknameNull
+                      onPressed: (isNicknameNull || !isNicknameDuplicated)
                           ? null
                           : () async {
                               // 닉네임 중복 확인 api
@@ -267,7 +276,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   headers: {'Content-Type': 'application/json'},
                                 ),
                               );
-                              isNicknameDuplicated = resp.data;
+                              setState(() {
+                                isNicknameDuplicated = resp.data;
+                              });
 
                               if (isNicknameDuplicated) {
                                 getNoticeDialog(context, '이미 사용중인 닉네임입니다.');

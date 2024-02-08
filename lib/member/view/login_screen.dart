@@ -5,6 +5,7 @@ import 'package:kiri/member/model/member_model.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
 import 'package:kiri/member/view/signup_screen.dart';
 import '../../common/component/custom_text_form_field.dart';
+import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/colors.dart';
 import '../../common/layout/default_layout.dart';
 
@@ -20,6 +21,21 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   String email = '';
   String password = '';
+
+  void getNoticeDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "닫기",
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +94,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ref
                               .read(memberStateNotifierProvider.notifier)
                               .login(email: email, password: password);
+                          if(state is MemberModelError){
+                            getNoticeDialog(context, "로그인에 실패했습니다.");
+                          }
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
