@@ -13,6 +13,7 @@ class PostPopupDialog extends StatelessWidget {
   final bool isAuthor;
   final VoidCallback joinOnPressed;
   final VoidCallback deleteOnPressed;
+  final VoidCallback updateOnPressed;
 
   const PostPopupDialog({
     required this.isFromSchool,
@@ -25,8 +26,36 @@ class PostPopupDialog extends StatelessWidget {
     required this.isAuthor,
     required this.joinOnPressed,
     required this.deleteOnPressed,
+    required this.updateOnPressed,
     super.key,
   });
+
+  Widget _button(
+    VoidCallback action,
+    FaIcon icon,
+  ) {
+    return SizedBox(
+      height: 40.0,
+      width: 40.0,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          shape: BoxShape.rectangle,
+        ),
+        child: InkWell(
+          onTap: action,
+          customBorder: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: icon,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +74,8 @@ class PostPopupDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Container(
-        padding: EdgeInsets.all(20.0),
-        width: MediaQuery.of(context).size.width * 0.7,
+        padding: EdgeInsets.fromLTRB(16, 20, 16, 10),
+        width: MediaQuery.of(context).size.width * 0.8,
         height: 200.0,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
@@ -57,25 +86,36 @@ class PostPopupDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _MainText(
                   isFromSchool: isFromSchool,
                   depart: depart,
                   arrive: arrive,
                 ),
-                if (isAuthor)
-                  SizedBox(
-                      height: 30.0,
-                      width: 60.0,
-                      child: IconButton(
-                        onPressed: deleteOnPressed,
-                        icon: FaIcon(
+                Row(
+                  children: [
+                    if (isAuthor)
+                      _button(
+                        updateOnPressed,
+                        FaIcon(
+                          FontAwesomeIcons.penClip,
+                          size: 18.0,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    SizedBox(width: 10),
+                    if (isAuthor)
+                      _button(
+                        deleteOnPressed,
+                        FaIcon(
                           FontAwesomeIcons.trash,
-                          size: 20.0,
+                          size: 18.0,
                           color: Colors.red,
                         ),
-                      )),
+                      ),
+                  ],
+                ),
               ],
             ),
             SizedBox(

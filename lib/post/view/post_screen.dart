@@ -235,6 +235,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     deleteOnPressed: () {
                       print('delete button clicked!');
                     },
+                    updateOnPressed: (){
+                      print('update button clicked!');
+                    },
                   );
                 },
               );

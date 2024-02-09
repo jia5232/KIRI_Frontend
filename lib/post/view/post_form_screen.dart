@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -117,18 +115,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //멤버 정보
-    // final memberState = ref.watch(memberStateNotifierProvider);
-    //
-    // UI에서 멤버 상태를 기반으로 적절한 위젯을 반환
-    // return memberState.when(
-    //   data: (member) {
-    //     return Text('대학 이름: ${member.univName}');
-    //   },
-    //   loading: () => CircularProgressIndicator(),
-    //   error: (error, stack) => Text('오류 발생: $error'),
-    // );
-
     final dio = ref.watch(dioProvider);
 
     //지하철 정보
@@ -409,8 +395,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                             child: TextFormField(
                               cursorColor: Colors.black,
                               onChanged: (value) {
-                                maxMember =
-                                    value.isNotEmpty ? int.parse(value!) : 0;
+                                maxMember = value.isNotEmpty ? int.parse(value!) : 0;
                               },
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -452,10 +437,10 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                             //posts/create으로 요청 보낼때 header에 accessToken 같이 보내야 됨
                             isFromSchool = fromSchool;
                             String? depart = fromSchool
-                                ? "국민대학교" // 추후 사용자의 대학 이름으로 변경해야함.
+                                ? "" // 백엔드에서 사용자의 대학 이름으로 기재함.
                                 : "$selectedStation역";
                             String? arrive =
-                                fromSchool ? "$selectedStation역" : "국민대학교";
+                                fromSchool ? "$selectedStation역" : "";
                             final formatDepartTime =
                                 departTime.toIso8601String();
 
