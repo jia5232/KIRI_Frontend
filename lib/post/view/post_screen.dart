@@ -1,18 +1,23 @@
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
+import 'package:kiri/common/provider/dio_provider.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
 import 'package:kiri/post/provider/post_form_screen_provider.dart';
 import 'package:kiri/post/provider/post_repository_provider.dart';
 import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
+import 'package:kiri/post/view/post_update_form_screen.dart';
 
+import '../../common/component/notice_popup_dialog.dart';
+import '../../common/const/data.dart';
 import '../../member/view/login_screen.dart';
 import '../component/post_card.dart';
 
@@ -45,6 +50,35 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             fetchMore: true,
           );
     }
+  }
+
+  void noticeBeforeDeleteDialog(BuildContext context, int postId) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: "정말 삭제하시겠습니까?",
+          buttonText: "삭제하기",
+          onPressed: () async {
+            final dio = ref.read(dioProvider);
+            final resp = await dio.delete(
+              "http://$ip/posts/$postId",
+              options: Options(
+                headers: {
+                  'Content-Type': 'application/json',
+                  'accessToken': 'true',
+                },
+              ),
+            );
+            if (resp.statusCode == 200) {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              ref.refresh(postStateNotifierProvider);
+            }
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -169,15 +203,6 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     }
 
     if (data is CursorPaginationModelError) {
-      //에러나면 일단 로그인 페이지로 돌려보냄 (현재 상태에서는 토큰 만료 오류이기 때문)
-      // Future.microtask(() {
-      //   Navigator.of(context).push(
-      //     MaterialPageRoute(
-      //       builder: (_) => LoginScreen(),
-      //     ),
-      //   );
-      // });
-
       return Center(
         child: Text("데이터를 불러올 수 없습니다."),
       );
@@ -221,6 +246,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                 context: context,
                 builder: (context) {
                   return PostPopupDialog(
+                    id: pItem.id,
                     isFromSchool: detailedPostModel.isFromSchool,
                     depart: detailedPostModel.depart,
                     arrive: detailedPostModel.arrive,
@@ -232,11 +258,16 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     joinOnPressed: () {
                       print('join button clicked!');
                     },
-                    deleteOnPressed: () {
-                      print('delete button clicked!');
+                    deleteOnPressed: (){
+                      noticeBeforeDeleteDialog(context, pItem.id);
                     },
-                    updateOnPressed: (){
-                      print('update button clicked!');
+                    updateOnPressed: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => PostUpdateFormScreen(postId: pItem.id),
+                        ),
+                      );
                     },
                   );
                 },
@@ -257,7 +288,6 @@ class _Top extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(
