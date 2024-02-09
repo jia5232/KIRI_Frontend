@@ -94,9 +94,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ref
                               .read(memberStateNotifierProvider.notifier)
                               .login(email: email, password: password);
-                          if(state is MemberModelError){
-                            getNoticeDialog(context, "로그인에 실패했습니다.");
-                          }
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,

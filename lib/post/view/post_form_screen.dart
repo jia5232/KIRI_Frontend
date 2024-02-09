@@ -1,11 +1,15 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kiri/common/const/data.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 
+import '../../common/component/notice_popup_dialog.dart';
+import '../../common/provider/dio_provider.dart';
 import '../provider/post_form_screen_provider.dart';
 
 class PostFormScreen extends ConsumerStatefulWidget {
@@ -26,7 +30,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
 
   // post 요청에 필요한 정보
   bool isFromSchool = true;
-  String station = '보문역';
   DateTime departTime = DateTime.now();
   int cost = 0;
   int maxMember = 0;
@@ -79,8 +82,56 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     );
   }
 
+  void getNoticeDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "닫기",
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  void getPostResultDialog(BuildContext context, String message) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "메인으로 돌아가기",
+          onPressed: () {
+            //Dialog를 닫고 로그인페이지로 나가야 하므로 두번 pop.
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    //멤버 정보
+    // final memberState = ref.watch(memberStateNotifierProvider);
+    //
+    // UI에서 멤버 상태를 기반으로 적절한 위젯을 반환
+    // return memberState.when(
+    //   data: (member) {
+    //     return Text('대학 이름: ${member.univName}');
+    //   },
+    //   loading: () => CircularProgressIndicator(),
+    //   error: (error, stack) => Text('오류 발생: $error'),
+    // );
+
+    final dio = ref.watch(dioProvider);
+
+    //지하철 정보
     final subwayState = ref.watch(subwayListNotifierProvider);
 
     String selectedLine = subwayState.selectedLine;
@@ -176,9 +227,16 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                             lineAndStations[value]!.isNotEmpty
                                                 ? lineAndStations[value]![0]
                                                 : null;
-                                        ref.read(subwayListNotifierProvider.notifier).setSelectedLine(value);
+                                        ref
+                                            .read(subwayListNotifierProvider
+                                                .notifier)
+                                            .setSelectedLine(value);
                                         if (selectedStation != null) {
-                                          ref.read(subwayListNotifierProvider.notifier).setSelectedStation(selectedStation!);
+                                          ref
+                                              .read(subwayListNotifierProvider
+                                                  .notifier)
+                                              .setSelectedStation(
+                                                  selectedStation!);
                                         }
                                       });
                                     }
@@ -203,7 +261,10 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                     if (value != null) {
                                       setState(() {
                                         selectedStation = value;
-                                        ref.read(subwayListNotifierProvider.notifier).setSelectedStation(value);
+                                        ref
+                                            .read(subwayListNotifierProvider
+                                                .notifier)
+                                            .setSelectedStation(value);
                                       });
                                     }
                                   },
@@ -387,16 +448,62 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                         width: MediaQuery.of(context).size.width - 32,
                         height: 46,
                         child: TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             //posts/create으로 요청 보낼때 header에 accessToken 같이 보내야 됨
                             isFromSchool = fromSchool;
                             String? depart = fromSchool
-                                ? "국민대학교"
-                                : station; //추후 사용자의 대학교명으로 변경 필요
-                            String? arrive = fromSchool ? station : "국민대학교";
+                                ? "국민대학교" // 추후 사용자의 대학 이름으로 변경해야함.
+                                : "$selectedStation역";
+                            String? arrive =
+                                fromSchool ? "$selectedStation역" : "국민대학교";
                             final formatDepartTime =
                                 departTime.toIso8601String();
-                            //departTime, cost, maxMember, nowMembwe 이미 설정됨!!
+
+                            // 예외 처리
+                            if (selectedStation == null) {
+                              getNoticeDialog(context, "지하철을 선택해주세요.");
+                            }
+                            if (cost < 4800 || cost > 500000) {
+                              getNoticeDialog(context,
+                                  "4,800~500,000원 사이\n적절한 금액을 입력해주세요.");
+                            }
+                            if (maxMember <= 1 || maxMember > 4) {
+                              getNoticeDialog(context, "적정 탑승인원은 2~4명 입니다.");
+                            }
+
+                            if (selectedStation != null &&
+                                cost >= 4800 &&
+                                cost <= 500000 &&
+                                maxMember > 1 &&
+                                maxMember <= 4) {
+                              try {
+                                final resp = await dio.post(
+                                  "http://$ip/posts/create",
+                                  data: {
+                                    'isFromSchool': isFromSchool,
+                                    'depart': depart,
+                                    'arrive': arrive,
+                                    'departTime': formatDepartTime,
+                                    'cost': cost,
+                                    'maxMember': maxMember,
+                                    "nowMember": nowMember,
+                                  },
+                                  options: Options(
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'accessToken': 'true',
+                                    },
+                                  ),
+                                );
+                                if (resp.statusCode == 200) {
+                                  getPostResultDialog(
+                                      context, "글 등록이 완료되었습니다.");
+                                }
+                              } catch (e) {
+                                getNoticeDialog(context, "에러가 발생했습니다!");
+                              }
+                            }
+                            //departTime, cost, maxMember, nowMember 이미 설정됨!!
                             print('isFromSchool: $isFromSchool');
                             print('depart: $depart');
                             print('arrive: $arrive');
