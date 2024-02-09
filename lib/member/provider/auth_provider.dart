@@ -44,11 +44,6 @@ class AuthProvider extends ChangeNotifier {
           name: LoginScreen.routeName,
           builder: (context, state) => LoginScreen(),
         ),
-        GoRoute(
-          path: '/signup',
-          name: SignupScreen.routeName,
-          builder: (context, state) => SignupScreen(),
-        ),
       ];
 
   void logout() {

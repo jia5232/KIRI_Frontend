@@ -7,6 +7,7 @@ import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
+import 'package:kiri/post/provider/post_form_screen_provider.dart';
 import 'package:kiri/post/provider/post_repository_provider.dart';
 import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
@@ -253,6 +254,7 @@ class _Top extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(

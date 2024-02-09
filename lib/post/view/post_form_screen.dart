@@ -1,18 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:kiri/common/const/colors.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 
-class PostFormScreen extends StatefulWidget {
-  //
+import '../provider/post_form_screen_provider.dart';
 
+class PostFormScreen extends ConsumerStatefulWidget {
   const PostFormScreen({super.key});
 
   @override
-  State<PostFormScreen> createState() => _PostFormScreenState();
+  _PostFormScreenState createState() => _PostFormScreenState();
 }
 
-class _PostFormScreenState extends State<PostFormScreen> {
+class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   // toggle button을 위한 정보
   bool fromSchool = true; //학교에서 출발
   bool toSchool = false; //학교로 도착
@@ -21,8 +24,9 @@ class _PostFormScreenState extends State<PostFormScreen> {
   // time picker를 위한 정보
   DateTime selectedDateTime = DateTime.now();
 
+  // post 요청에 필요한 정보
   bool isFromSchool = true;
-  String? station = '보문역';
+  String station = '보문역';
   DateTime departTime = DateTime.now();
   int cost = 0;
   int maxMember = 0;
@@ -77,6 +81,13 @@ class _PostFormScreenState extends State<PostFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final subwayState = ref.watch(subwayListNotifierProvider);
+
+    String selectedLine = subwayState.selectedLine;
+    String selectedStation = subwayState.selectedStation;
+
+    final lineAndStations = subwayState.lineAndStations;
+
     final nameTextStyle = TextStyle(
       fontSize: 18.0,
     );
@@ -140,34 +151,69 @@ class _PostFormScreenState extends State<PostFormScreen> {
                             style: nameTextStyle,
                           ),
                           SizedBox(width: 40),
-                          SizedBox(
-                            width: 180.0,
-                            child: TextButton(
-                              style: ButtonStyle(
-                                side: MaterialStateProperty.all(
-                                  BorderSide(
-                                    color: Colors.black,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                backgroundColor:
-                                    MaterialStateProperty.all(Colors.grey[200]),
-                                foregroundColor:
-                                    MaterialStateProperty.all(Colors.black),
-                                shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        10.0), // Adjust the border radius here
-                                  ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                width: 180,
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: selectedLine,
+                                  items: lineAndStations.keys == null
+                                      ? []
+                                      : lineAndStations.keys
+                                          .map((e) => DropdownMenuItem(
+                                                value: e,
+                                                child: Text(e),
+                                              ))
+                                          .toList(),
+                                  onChanged: (String? value) {
+                                    if (value != null &&
+                                        lineAndStations.containsKey(value)) {
+                                      setState(() {
+                                        selectedLine = value;
+                                        selectedStation =
+                                            lineAndStations[value]!.isNotEmpty
+                                                ? lineAndStations[value]![0]
+                                                : null;
+                                        ref.read(subwayListNotifierProvider.notifier).setSelectedLine(value);
+                                        if (selectedStation != null) {
+                                          ref.read(subwayListNotifierProvider.notifier).setSelectedStation(selectedStation!);
+                                        }
+                                      });
+                                    }
+                                  },
                                 ),
                               ),
-                              onPressed: () {},
-                              child: Text("선택하기"),
-                            ),
+                              Container(
+                                width: 180,
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: selectedStation,
+                                  items: lineAndStations[selectedLine] == null
+                                      ? []
+                                      : List<String>.from(
+                                              lineAndStations[selectedLine])
+                                          .map((e) => DropdownMenuItem(
+                                                value: e.toString(),
+                                                child: Text(e.toString()),
+                                              ))
+                                          .toList(),
+                                  onChanged: (String? value) {
+                                    if (value != null) {
+                                      setState(() {
+                                        selectedStation = value;
+                                        ref.read(subwayListNotifierProvider.notifier).setSelectedStation(value);
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 10),
                       Row(
                         children: [
                           Text(
