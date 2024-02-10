@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/view/post_screen.dart';
 
+import '../../member/view/mypage_screen.dart';
 import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
+  static String get routeName => 'home';
+
   const RootTab({super.key});
 
   @override
@@ -43,7 +46,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         children: [
           PostScreen(),
           Center(child: Container(child: Text("채팅"))),
-          Center(child: Container(child: Text("마이페이지"))),
+          MyPageScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -51,25 +54,37 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         unselectedItemColor: BODY_TEXT_COLOR,
         selectedFontSize: 10.0,
         unselectedFontSize: 10.0,
-        type: BottomNavigationBarType.shifting,
-        onTap: (int index){
+        type: BottomNavigationBarType.fixed,
+        onTap: (int index) {
           controller.animateTo(index);
         },
         currentIndex: index,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_taxi),
+            icon: Icon(
+              Icons.local_taxi,
+              size: 30.0,
+            ),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
+            icon: Icon(
+              Icons.chat,
+              size: 30.0,
+            ),
             label: '채팅',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outlined),
+            icon: Icon(
+              Icons.person_outlined,
+              size: 30.0,
+            ),
             label: '마이페이지',
           ),
         ],
+        selectedLabelStyle: TextStyle(
+          fontSize: 12.0,
+        ),
       ),
     );
   }

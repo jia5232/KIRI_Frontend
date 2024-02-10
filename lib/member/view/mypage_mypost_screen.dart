@@ -1,41 +1,28 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
-import 'package:kiri/common/model/cursor_pagination_model.dart';
-import 'package:kiri/common/provider/dio_provider.dart';
-import 'package:kiri/post/component/post_popup_dialog.dart';
-import 'package:kiri/post/provider/post_repository_provider.dart';
-import 'package:kiri/post/provider/post_screen_provider.dart';
-import 'package:kiri/post/provider/post_state_notifier_provider.dart';
-import 'package:kiri/post/view/post_form_screen.dart';
-import 'package:kiri/post/view/post_update_form_screen.dart';
-import '../../common/component/notice_popup_dialog.dart';
-import '../../common/const/data.dart';
-import '../component/post_card.dart';
 
-class PostScreen extends ConsumerStatefulWidget {
-  const PostScreen({Key? key}) : super(key: key);
+import '../../common/component/notice_popup_dialog.dart';
+import '../../common/const/colors.dart';
+import '../../common/const/data.dart';
+import '../../common/model/cursor_pagination_model.dart';
+import '../../common/provider/dio_provider.dart';
+import '../../post/component/post_card.dart';
+import '../../post/component/post_popup_dialog.dart';
+import '../../post/provider/post_repository_provider.dart';
+import '../../post/provider/post_state_notifier_provider.dart';
+import '../../post/view/post_update_form_screen.dart';
+
+class MyPageMyPostScreen extends ConsumerStatefulWidget {
+  const MyPageMyPostScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _PostScreenState();
+  ConsumerState<MyPageMyPostScreen> createState() => _MyPageMyPostScreenState();
 }
 
-class _PostScreenState extends ConsumerState<PostScreen> {
+class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
   final ScrollController controller = ScrollController();
-
-  void toggleSelect(WidgetRef ref, int value) {
-    ref.read(fromSchoolProvider.notifier).state = value == 0;
-    ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    controller.addListener(scrollListener);
-  }
 
   void scrollListener() {
     // 현재 위치가 최대 길이보다 조금 덜되는 위치까지 왔다면 새로운 데이터를 추가 요청.
@@ -45,6 +32,14 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             fetchMore: true,
           );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller.addListener(scrollListener);
+    Future.microtask(
+        () => ref.read(postStateNotifierProvider.notifier).getMyPosts());
   }
 
   void noticeBeforeDeleteDialog(BuildContext context, int postId) async {
@@ -68,7 +63,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             if (resp.statusCode == 200) {
               Navigator.pop(context);
               Navigator.pop(context);
-              ref.refresh(postStateNotifierProvider);
+              await ref.read(postStateNotifierProvider.notifier).getMyPosts();
             }
           },
         );
@@ -79,107 +74,18 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(postStateNotifierProvider);
-    //postStateNotifierProvider가 postRepository에서 받아온 값을 그대로 돌려주므로 Future builder가 필요없어짐..
 
     return DefaultLayout(
       child: SafeArea(
         child: Column(
           children: [
             _Top(),
-            _buildToggleButton(ref, context),
-            _buildTextFormField(ref, context),
-            SizedBox(height: 12),
+            SizedBox(height: 14.0),
             Expanded(
               child: _buildPostList(data, ref, context),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildToggleButton(WidgetRef ref, BuildContext context) {
-    double borderWidth = 1;
-
-    return ToggleButtons(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text('학교에서 출발'),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text('학교로 도착'),
-        ),
-      ],
-      isSelected: [
-        ref.watch(fromSchoolProvider),
-        !ref.watch(fromSchoolProvider),
-      ],
-      onPressed: (value) => toggleSelect(ref, value),
-      borderColor: Colors.grey[300],
-      borderWidth: borderWidth,
-      selectedBorderColor: Colors.black,
-      fillColor: Colors.transparent,
-      renderBorder: true,
-      constraints: BoxConstraints.expand(
-        width: MediaQuery.of(context).size.width / 2 -
-            borderWidth * 2, // 화면의 너비를 2로 나누어 각 버튼의 너비를 지정
-        height: 40, // 버튼의 높이를 40으로 지정
-      ),
-      textStyle: TextStyle(fontSize: 18.0),
-      selectedColor: Colors.black,
-    );
-  }
-
-  Widget _buildTextFormField(WidgetRef ref, BuildContext context) {
-    bool fromSchool = ref.watch(fromSchoolProvider); //학교에서 출발
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      child: Column(
-        children: [
-          TextFormField(
-            cursorColor: PRIMARY_COLOR,
-            decoration: InputDecoration(
-              hintText: fromSchool ? '도착지를 입력해주세요.' : '출발지를 입력해주세요.',
-              hintStyle: TextStyle(
-                color: PRIMARY_COLOR,
-                fontSize: 16.0,
-                fontWeight: FontWeight.w500,
-              ),
-              filled: true,
-              fillColor: Colors.white,
-              suffixIcon: IconButton(
-                icon: Icon(
-                  Icons.search,
-                  size: 30.0,
-                ),
-                color: PRIMARY_COLOR,
-                onPressed: () {
-                  ref
-                      .read(postStateNotifierProvider.notifier)
-                      .paginate(forceRefetch: true);
-                },
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                borderSide: BorderSide(
-                    color: PRIMARY_COLOR,
-                    width: 1.5), // Set your color for the border here
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                borderSide: BorderSide(
-                    color: PRIMARY_COLOR,
-                    width: 2.5), // Set your color for the border here
-              ),
-            ),
-            onChanged: (String value) {
-              ref.read(searchKeywordProvider.notifier).state = value;
-            },
-          ),
-        ],
       ),
     );
   }
@@ -262,7 +168,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                         MaterialPageRoute(
                           builder: (_) => PostUpdateFormScreen(
                             postId: pItem.id,
-                            isMypageUpdate: false,
+                            isMypageUpdate: true,
                           ),
                         ),
                       );
@@ -286,41 +192,28 @@ class _Top extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '국민끼리',
-            style: TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          icon: Icon(
+            Icons.chevron_left,
+            color: Colors.black,
           ),
-          TextButton.icon(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => PostFormScreen(),
-                ),
-              );
-            },
-            icon: FaIcon(FontAwesomeIcons.solidPenToSquare),
-            label: Text(
-              "내가 방장",
-              style: TextStyle(
-                fontSize: 18,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
+        ),
+        SizedBox(width: 90),
+        const Text(
+          '내가 작성한 글',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
