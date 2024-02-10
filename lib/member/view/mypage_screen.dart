@@ -117,10 +117,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     );
   }
 
-  void onQnAPressed(){
-
-  }
-
   void onContactPressed() async {
     final Email email = Email(
         body: '문의할 사항을 아래에 작성해주세요.',
@@ -138,10 +134,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       String message = '기본 메일 앱을 사용할 수 없습니다. \n이메일로 연락주세요! 99jiasmin@gmail.com';
       showNoticeAlert(title, message);
     }
-  }
-
-  void onLogoutPressed(){
-
   }
 
   void showNoticeAlert(String title, String message) {
