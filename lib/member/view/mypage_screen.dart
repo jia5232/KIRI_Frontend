@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/member/model/member_model.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
+import 'package:kiri/member/view/mypage_qna_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/colors.dart';
@@ -198,7 +199,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           child: Column(
             children: [
               _Top(),
-              SizedBox(height: 10.0),
               _Title(nickname: nickname),
               SizedBox(height: 20.0),
               _buildAccountInfo(ref, context),
@@ -279,7 +279,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         _MenuButton(
           title: "Q&A",
           onPressed: () {
-            print("Q&A Pressed");
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MypageQnaScreen(),
+              ),
+            );
           },
         ),
         _MenuButton(
@@ -310,7 +314,7 @@ class _Top extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(
-            '국민끼리',
+            'KIRI',
             style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w500,
