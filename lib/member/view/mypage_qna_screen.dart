@@ -3,8 +3,8 @@ import 'package:kiri/common/layout/default_layout.dart';
 
 import '../../common/const/colors.dart';
 
-class MypageQnaScreen extends StatelessWidget {
-  const MypageQnaScreen({super.key});
+class MyPageQnaScreen extends StatelessWidget {
+  const MyPageQnaScreen({super.key});
 
   Widget _QnA(String question, String answer) {
     return Padding(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/member/model/member_model.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
+import 'package:kiri/member/view/mypage_mypost_screen.dart';
 import 'package:kiri/member/view/mypage_qna_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../common/component/notice_popup_dialog.dart';
@@ -240,7 +241,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         _MenuButton(
           title: "내가 작성한 글",
           onPressed: () {
-            print("내가 작성한 글 Pressed");
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MyPageMyPostScreen(),
+              ),
+            );
           },
         ),
       ],
@@ -273,7 +278,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => MypageQnaScreen(),
+                builder: (_) => MyPageQnaScreen(),
               ),
             );
           },

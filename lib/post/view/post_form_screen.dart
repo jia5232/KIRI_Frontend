@@ -9,6 +9,7 @@ import 'package:kiri/common/layout/default_layout.dart';
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/provider/dio_provider.dart';
 import '../provider/post_form_screen_provider.dart';
+import '../provider/post_state_notifier_provider.dart';
 
 class PostFormScreen extends ConsumerStatefulWidget {
   const PostFormScreen({super.key});
@@ -107,6 +108,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
             //Dialog를 닫고 로그인페이지로 나가야 하므로 두번 pop.
             Navigator.pop(context);
             Navigator.pop(context);
+            ref.refresh(postStateNotifierProvider);
           },
         );
       },
