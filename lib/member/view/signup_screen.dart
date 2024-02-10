@@ -1,29 +1,32 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/component/custom_text_form_field.dart';
+import 'package:kiri/common/component/notice_popup_dialog.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
-import 'package:kiri/common/view/splash_screen.dart';
-import 'package:kiri/member/view/login_screen.dart';
+import 'package:kiri/common/provider/dio_provider.dart';
 
 import '../../common/const/data.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'signup';
 
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final univNames = ['국민대학교', '세종대학교'];
   String univName = '';
   String email_prefix = '';
   final email_suffix = {'국민대학교': '@kookmin.ac.kr', '세종대학교': '@sejong.ac.kr'};
   String email = '';
-  String key = ''; // 서버에서 받아올 이메일 인증번호
-  String inputKey = ''; // 사용자가 입력할 이메일 인증번호
+  String authNumber =
+      'tmp129049492094nkdsjlkfjwl'; // 이후 서버에서 받아올 이메일 인증번호로 초기화됨
+  String inputAuthNumber = ''; // 사용자가 입력할 이메일 인증번호
   String nickname = '';
   String password = '';
   String password2 = '';
@@ -31,11 +34,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
   //이메일, 비밀번호, 닉네임 검증
   bool isEmailNull = true;
-  bool isEmailDuplicated = false; //true로 두고 이메일 중복 작업해야 함.
-  bool isEmailAuthenticated = true; // false로 두고 이메일 인증 작업해야 함.
+  bool isEmailAuthenticated = false; // false로 두고 이메일 인증 작업해야 함.
   bool isPasswordNull = true;
   bool isPasswordDifferent = false;
-  bool isNicknameDuplicated = false; //true로 두고 닉네임 중복 작업해야 함.
+  bool isNicknameNull = true;
+  bool isNicknameDuplicated = true; //true로 두고 닉네임 중복 작업해야 함.
 
   @override
   void initState() {
@@ -45,9 +48,42 @@ class _SignupScreenState extends State<SignupScreen> {
     });
   }
 
+  void getNoticeDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "닫기",
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  void getSignupResultDialog(BuildContext context, String message) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "로그인 하러 가기",
+          onPressed: () {
+            //Dialog를 닫고 로그인페이지로 나가야 하므로 두번 pop.
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
+    final dio = ref.watch(dioProvider);
 
     return DefaultLayout(
       child: SingleChildScrollView(
@@ -108,6 +144,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        isInputEnabled: isEmailAuthenticated ? false : true,
                         suffixText: email_suffix[univName] == null
                             ? ''
                             : email_suffix[univName],
@@ -130,12 +167,29 @@ class _SignupScreenState extends State<SignupScreen> {
                         backgroundColor: PRIMARY_COLOR,
                         // minimumSize:,
                       ),
-                      onPressed: () {
-                        // 인증번호 전송 api
-                        // 중복 이메일 -> 이미 가입된 이메일입니다.
-                        // 신규 이메일 -> 서버에서 인증번호를 받아 저장해둔다.
-                        // key = 서버에서 발급한 인증번호.
-                      },
+                      onPressed: (isEmailNull || isEmailAuthenticated)
+                          ? null
+                          : () async {
+                              // 인증번호 전송 api
+                              // 중복 이메일 -> 이미 가입된 이메일입니다.
+                              // 신규 이메일 -> 서버에서 인증번호를 받아 저장해둔다.
+                              // authNumber = 서버에서 발급한 인증번호.
+                              final resp = await dio.post(
+                                'http://$ip/email',
+                                data: {'email': email},
+                                options: Options(
+                                  headers: {'Content-Type': 'application/json'},
+                                ),
+                              );
+                              if (resp.data.containsKey('exist')) {
+                                getNoticeDialog(
+                                    context, resp.data['exist'].toString());
+                              } else if (resp.data.containsKey('authNumber')) {
+                                authNumber = resp.data['authNumber'];
+                              } else {
+                                // 기타 오류 처리
+                              }
+                            },
                       child: Text('인증'),
                     ),
                   ],
@@ -153,12 +207,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        isInputEnabled: isEmailAuthenticated ? false : true,
                         hintText: '인증번호 입력',
                         onChanged: (String value) {
-                          inputKey = value;
                           setState(() {
-                            isEmailAuthenticated =
-                                key == inputKey ? true : false;
+                            inputAuthNumber = value;
                           });
                         },
                       ),
@@ -168,9 +221,22 @@ class _SignupScreenState extends State<SignupScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
                       ),
-                      onPressed: () {
-                        // 인증번호 확인 api
-                      },
+                      onPressed: isEmailAuthenticated
+                          ? null
+                          : () {
+                              setState(() {
+                                isEmailAuthenticated =
+                                    authNumber == inputAuthNumber
+                                        ? true
+                                        : false;
+                              });
+
+                              if (isEmailAuthenticated) {
+                                getNoticeDialog(context, '인증번호가 일치합니다.');
+                              } else {
+                                getNoticeDialog(context, '인증번호가 일치하지 않습니다.');
+                              }
+                            },
                       child: Text('확인'),
                     ),
                   ],
@@ -183,9 +249,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 3 * 2,
                       child: CustomTextFormField(
+                        isInputEnabled: isNicknameDuplicated ? true : false,
                         hintText: '닉네임 입력',
                         onChanged: (String value) {
                           nickname = value;
+                          setState(() {
+                            isNicknameNull = nickname == '' ? true : false;
+                          });
                         },
                       ),
                     ),
@@ -194,13 +264,38 @@ class _SignupScreenState extends State<SignupScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
                       ),
-                      onPressed: () {
-                        // 닉네임 중복 확인 api
-                      },
+                      onPressed: (isNicknameNull || !isNicknameDuplicated)
+                          ? null
+                          : () async {
+                              // 닉네임 중복 확인 api
+                              final resp = await dio.get(
+                                'http://$ip/nicknameExists',
+                                data: {'nickname': nickname},
+                                options: Options(
+                                  headers: {'Content-Type': 'application/json'},
+                                ),
+                              );
+                              setState(() {
+                                isNicknameDuplicated = resp.data;
+                              });
+
+                              if (isNicknameDuplicated) {
+                                getNoticeDialog(context, '이미 사용중인 닉네임입니다.');
+                              } else {
+                                getNoticeDialog(context, '사용 가능한 닉네임입니다');
+                              }
+                            },
                       child: Text('확인'),
                     ),
                   ],
                 ),
+                if (isNicknameNull) //이메일 검증
+                  Text(
+                    '닉네임은 빈칸일 수 없습니다.',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                    ),
+                  ),
                 SizedBox(height: 30.0),
                 Text('비밀번호'),
                 SizedBox(height: 4.0),
@@ -307,12 +402,12 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   onPressed: () async {
                     if (!isEmailNull &&
-                        !isEmailDuplicated &&
+                        isEmailAuthenticated &&
                         !isPasswordNull &&
                         !isPasswordDifferent &&
+                        !isNicknameNull &&
                         !isNicknameDuplicated &&
-                        isAccept &&
-                        isEmailAuthenticated) {
+                        isAccept) {
                       // 회원가입 api 요청..
 
                       try {
@@ -326,22 +421,16 @@ class _SignupScreenState extends State<SignupScreen> {
                             'isAccept': isAccept,
                             'isEmailAuthenticated': isEmailAuthenticated,
                           },
-                        );
-
-                        print(resp.data.toString());
-
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => LoginScreen(),
+                          options: Options(
+                            headers: {'Content-Type': 'application/json'},
                           ),
                         );
+                        if (resp.statusCode == 200) {
+                          //리다이렉트 로직 다시 짜기!
+                          getSignupResultDialog(context, "회원가입이 완료되었습니다.");
+                        }
                       } catch (e) {
-                        //서버에서 넘긴 에러를 모달로 띄워줘야 한다.
-                        // Navigator.of(context).push(
-                        //   MaterialPageRoute(
-                        //     builder: (_) => SignupScreen(),
-                        //   ),
-                        // );
+                        getNoticeDialog(context, e.toString());
                       }
                     }
                   },

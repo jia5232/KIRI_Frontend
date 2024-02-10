@@ -5,20 +5,27 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/const/data.dart';
 import 'package:kiri/common/layout/default_layout.dart';
-
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/provider/dio_provider.dart';
 import '../provider/post_form_screen_provider.dart';
 import '../provider/post_state_notifier_provider.dart';
 
-class PostFormScreen extends ConsumerStatefulWidget {
-  const PostFormScreen({super.key});
+class PostUpdateFormScreen extends ConsumerStatefulWidget {
+  final int postId;
+  final bool isMypageUpdate;
+
+  const PostUpdateFormScreen({
+    required this.postId,
+    required this.isMypageUpdate,
+    super.key,
+  });
 
   @override
-  _PostFormScreenState createState() => _PostFormScreenState();
+  _PostUpdateFormScreenState createState() => _PostUpdateFormScreenState();
 }
 
-class _PostFormScreenState extends ConsumerState<PostFormScreen> {
+class _PostUpdateFormScreenState extends ConsumerState<PostUpdateFormScreen> {
+
   // toggle button을 위한 정보
   bool fromSchool = true; //학교에서 출발
   bool toSchool = false; //학교로 도착
@@ -32,7 +39,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
   DateTime departTime = DateTime.now();
   int cost = 0;
   int maxMember = 0;
-  int nowMember = 1; //고정
+  int nowMember = 1;
 
   @override
   void initState() {
@@ -96,19 +103,23 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
     );
   }
 
-  void getPostResultDialog(BuildContext context, String message) {
+  void getUpdateResultDialog(BuildContext context, String message) {
     showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) {
         return NoticePopupDialog(
           message: message,
-          buttonText: "메인으로 돌아가기",
-          onPressed: () {
-            //Dialog를 닫고 로그인페이지로 나가야 하므로 두번 pop.
+          buttonText: widget.isMypageUpdate ? "목록으로 돌아가기" : "메인으로 돌아가기",
+          onPressed: () async {
+            //Dialog를 닫고 메인 페이지로 나가야 하므로 두번 pop.
             Navigator.pop(context);
             Navigator.pop(context);
-            ref.refresh(postStateNotifierProvider);
+            if(widget.isMypageUpdate){
+              await ref.read(postStateNotifierProvider.notifier).getMyPosts();
+            } else{
+              ref.refresh(postStateNotifierProvider);
+            }
           },
         );
       },
@@ -397,7 +408,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                             child: TextFormField(
                               cursorColor: Colors.black,
                               onChanged: (value) {
-                                maxMember = value.isNotEmpty ? int.parse(value!) : 0;
+                                maxMember =
+                                    value.isNotEmpty ? int.parse(value!) : 0;
                               },
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -464,8 +476,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                 maxMember > 1 &&
                                 maxMember <= 4) {
                               try {
-                                final resp = await dio.post(
-                                  "http://$ip/posts/create",
+                                final resp = await dio.put(
+                                  "http://$ip/posts/${widget.postId}",
                                   data: {
                                     'isFromSchool': isFromSchool,
                                     'depart': depart,
@@ -483,16 +495,16 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                   ),
                                 );
                                 if (resp.statusCode == 200) {
-                                  getPostResultDialog(
-                                      context, "글 등록이 완료되었습니다.");
+                                  getUpdateResultDialog(context, "글 수정이 완료되었습니다.");
                                 }
                               } catch (e) {
-                                getNoticeDialog(context, "에러가 발생했습니다!");
+                                // getNoticeDialog(context, "에러가 발생했습니다!");
+                                print(e.toString());
                               }
                             }
                           },
                           child: Text(
-                            '등록하기',
+                            '수정하기',
                             style: TextStyle(
                               fontSize: 18.0,
                             ),

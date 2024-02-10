@@ -5,6 +5,7 @@ import 'package:kiri/common/view/root_tab.dart';
 import 'package:kiri/common/view/splash_screen.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
 import 'package:kiri/member/view/login_screen.dart';
+import 'package:kiri/member/view/signup_screen.dart';
 
 import '../model/member_model.dart';
 

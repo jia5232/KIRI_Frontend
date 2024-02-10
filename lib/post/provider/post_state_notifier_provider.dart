@@ -156,4 +156,36 @@ class PostStateNotifier extends StateNotifier<CursorPaginationModelBase> {
       state = CursorPaginationModelError(message: '데이터를 가져오지 못했습니다');
     }
   }
+
+  Future<void> getMyPosts({
+    int lastPostId = 0,
+    bool fetchMore = false,
+}) async {
+    if (!_mounted) return;
+
+    try {
+      if (fetchMore && state is CursorPaginationModel && !(state as CursorPaginationModel).meta.hasMore) {
+        return; // 추가 데이터가 없으면 더 이상 진행하지 않음
+      }
+
+      final CursorPaginationModelBase prevState = state;
+      if (!fetchMore) {
+        state = CursorPaginationModelLoading();
+      }
+
+      final resp = await repository.getMyPosts(lastPostId);
+
+      if (!_mounted) return;
+
+      if (fetchMore && prevState is CursorPaginationModel) {
+        final List<PostModel> newData = List.from(prevState.data)..addAll(resp.data);
+        state = resp.copyWith(data: newData);
+      } else {
+        state = resp;
+      }
+    } catch (e) {
+      if (!_mounted) return;
+      state = CursorPaginationModelError(message: '데이터를 가져오지 못했습니다.');
+    }
+  }
 }
