@@ -6,11 +6,13 @@ class NoticePopupDialog extends StatelessWidget {
   final String message;
   final String buttonText;
   final VoidCallback onPressed;
+  final Widget? child;
 
   const NoticePopupDialog({
     required this.message,
     required this.buttonText,
     required this.onPressed,
+    this.child,
     super.key,
   });
 
@@ -19,14 +21,14 @@ class NoticePopupDialog extends StatelessWidget {
     return Dialog(
       shape: RoundedRectangleBorder(
         //Dialog 화면의 border
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(10.0),
       ),
       child: Container(
         padding: EdgeInsets.all(20.0),
         width: MediaQuery.of(context).size.width * 0.7,
         height: 200.0,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
+          border: Border.all(color: Colors.transparent),
           borderRadius:
               BorderRadius.all(Radius.circular(12.0)), //Dialog 내부 컨테이너의 border
         ),

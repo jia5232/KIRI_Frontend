@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/member/model/member_model.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
-
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/colors.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
@@ -14,18 +16,180 @@ class MyPageScreen extends ConsumerStatefulWidget {
 }
 
 class _MyPageScreenState extends ConsumerState<MyPageScreen> {
+
+  void onMyInfoPressed(String email, String univName, String nickname){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text("내 정보"),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 32.0, right: 32.0, top: 10.0, bottom: 10.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text('이메일'),
+                      const SizedBox(
+                        width: 30.0,
+                      ),
+                      Text(email),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  Row(
+                    children: [
+                      Text('학교'),
+                      const SizedBox(
+                        width: 42.0,
+                      ),
+                      Text(univName),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  Row(
+                    children: [
+                      Text('닉네임'),
+                      const SizedBox(
+                        width: 30.0,
+                      ),
+                      Text(nickname),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void onAppInfoPressed() async {
+    PackageInfo info = await PackageInfo.fromPlatform();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text("앱 정보"),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 32.0, right: 32.0, top: 10.0, bottom: 10.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text('앱 이름'),
+                      const SizedBox(
+                        width: 30.0,
+                      ),
+                      Text('KIRI'),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  Row(
+                    children: [
+                      Text('앱 버전'),
+                      const SizedBox(
+                        width: 30.0,
+                      ),
+                      Text(info.version),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void onQnAPressed(){
+
+  }
+
+  void onContactPressed() async {
+    final Email email = Email(
+        body: '문의할 사항을 아래에 작성해주세요.',
+        subject: '[kiri 문의]',
+        recipients: ['99jiasmin@gmail.com'],
+        cc: [],
+        bcc: [],
+        attachmentPaths: [],
+        isHTML: false);
+
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (error) {
+      String title = '문의하기';
+      String message = '기본 메일 앱을 사용할 수 없습니다. \n이메일로 연락주세요! 99jiasmin@gmail.com';
+      showNoticeAlert(title, message);
+    }
+  }
+
+  void onLogoutPressed(){
+
+  }
+
+  void showNoticeAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(
+            title,
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 32.0, right: 32.0, top: 10.0, bottom: 10.0),
+              child: Column(
+                children: [
+                  Text(message),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void noticeBeforeLogoutDialog() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: "정말 로그아웃 하시겠습니까?",
+          buttonText: "로그아웃",
+          onPressed: () {
+            ref.read(memberStateNotifierProvider.notifier).logout();
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final memberState = ref.watch(memberStateNotifierProvider);
 
     String nickname = "";
-    String univName = "";
-    String email = "";
 
     if (memberState is MemberModel) {
       nickname = memberState.nickname;
-      univName = memberState.univName;
-      email = memberState.email;
     }
 
     return DefaultLayout(
@@ -48,6 +212,19 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
   }
 
   Widget _buildAccountInfo(WidgetRef ref, BuildContext context) {
+    final memberState = ref.watch(memberStateNotifierProvider);
+
+    String nickname = "";
+    String univName = "";
+    String email = "";
+
+    if (memberState is MemberModel) {
+      nickname = memberState.nickname;
+      univName = memberState.univName;
+      email = memberState.email;
+    }
+
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -59,7 +236,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         _MenuButton(
           title: "내 정보",
           onPressed: () {
-            print("내 정보 Pressed");
+            onMyInfoPressed(email, univName, nickname);
           },
           border: Border(
             top: BorderSide(color: Colors.grey.shade400),
@@ -88,9 +265,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           child: Text("이용 안내"),
         ),
         _MenuButton(
-          title: "앱 버전",
+          title: "앱 정보",
           onPressed: () {
-            print("앱 버전 Pressed");
+            onAppInfoPressed();
           },
           border: Border(
             top: BorderSide(color: Colors.grey.shade400),
@@ -108,13 +285,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         _MenuButton(
           title: "문의하기",
           onPressed: () {
-            print("문의하기 Pressed");
+            onContactPressed();
           },
         ),
         _MenuButton(
           title: "로그아웃",
-          onPressed: () {
-            print("로그아웃 Pressed");
+          onPressed: (){
+            noticeBeforeLogoutDialog();
           },
         ),
       ],
@@ -163,7 +340,7 @@ class _Title extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '반가워요 $nickname님,',
+            '반가워요 $nickname님!',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w500,
@@ -171,7 +348,7 @@ class _Title extends StatelessWidget {
             ),
           ),
           Text(
-            '오늘도 끼리와 좋은 하루 되세요!',
+            '오늘도 끼리와 함께 좋은 하루 되세요!',
             style: TextStyle(
               fontSize: 16,
               color: BODY_TEXT_COLOR,
