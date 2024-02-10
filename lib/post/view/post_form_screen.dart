@@ -490,14 +490,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                 getNoticeDialog(context, "에러가 발생했습니다!");
                               }
                             }
-                            //departTime, cost, maxMember, nowMember 이미 설정됨!!
-                            print('isFromSchool: $isFromSchool');
-                            print('depart: $depart');
-                            print('arrive: $arrive');
-                            print('formatDepartTime: $formatDepartTime');
-                            print('cost: $cost');
-                            print('maxMember: $maxMember');
-                            print('nowMember: $nowMember');
                           },
                           child: Text(
                             '등록하기',

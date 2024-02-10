@@ -80,6 +80,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
         child: Column(
           children: [
             _Top(),
+            SizedBox(height: 14.0),
             Expanded(
               child: _buildPostList(data, ref, context),
             ),
@@ -165,8 +166,10 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
                       Navigator.pop(context);
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) =>
-                              PostUpdateFormScreen(postId: pItem.id),
+                          builder: (_) => PostUpdateFormScreen(
+                            postId: pItem.id,
+                            isMypageUpdate: true,
+                          ),
                         ),
                       );
                     },

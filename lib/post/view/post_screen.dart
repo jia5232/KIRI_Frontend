@@ -253,14 +253,17 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     joinOnPressed: () {
                       print('join button clicked!');
                     },
-                    deleteOnPressed: (){
+                    deleteOnPressed: () {
                       noticeBeforeDeleteDialog(context, pItem.id);
                     },
                     updateOnPressed: () {
                       Navigator.pop(context);
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => PostUpdateFormScreen(postId: pItem.id),
+                          builder: (_) => PostUpdateFormScreen(
+                            postId: pItem.id,
+                            isMypageUpdate: false,
+                          ),
                         ),
                       );
                     },

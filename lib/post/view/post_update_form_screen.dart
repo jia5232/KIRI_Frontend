@@ -12,9 +12,11 @@ import '../provider/post_state_notifier_provider.dart';
 
 class PostUpdateFormScreen extends ConsumerStatefulWidget {
   final int postId;
+  final bool isMypageUpdate;
 
   const PostUpdateFormScreen({
     required this.postId,
+    required this.isMypageUpdate,
     super.key,
   });
 
@@ -108,12 +110,16 @@ class _PostUpdateFormScreenState extends ConsumerState<PostUpdateFormScreen> {
       builder: (context) {
         return NoticePopupDialog(
           message: message,
-          buttonText: "메인으로 돌아가기",
-          onPressed: () {
+          buttonText: widget.isMypageUpdate ? "목록으로 돌아가기" : "메인으로 돌아가기",
+          onPressed: () async {
             //Dialog를 닫고 메인 페이지로 나가야 하므로 두번 pop.
             Navigator.pop(context);
             Navigator.pop(context);
-            ref.refresh(postStateNotifierProvider);
+            if(widget.isMypageUpdate){
+              await ref.read(postStateNotifierProvider.notifier).getMyPosts();
+            } else{
+              ref.refresh(postStateNotifierProvider);
+            }
           },
         );
       },
@@ -131,13 +137,6 @@ class _PostUpdateFormScreenState extends ConsumerState<PostUpdateFormScreen> {
     String selectedStation = subwayState.selectedStation;
 
     final lineAndStations = subwayState.lineAndStations;
-
-    // post 요청에 필요한 정보
-    bool isFromSchool = true;
-    DateTime departTime = DateTime.now();
-    int cost = 0;
-    int maxMember = 0;
-    int nowMember = 1;
 
     final nameTextStyle = TextStyle(
       fontSize: 18.0,
