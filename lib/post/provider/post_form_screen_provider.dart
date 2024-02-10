@@ -36,6 +36,7 @@ final subwayStateProvider = FutureProvider<SubwayState>((ref) async {
   return SubwayState(lineAndStations: lineAndStations, selectedLine: selectedLine, selectedStation: selectedStation);
 });
 
+
 // 2. StateNotifierProvider를 사용하여 SubwayState를 관리하는 SubwayListNotifier
 final subwayListNotifierProvider = StateNotifierProvider<SubwayListNotifier, SubwayState>((ref) {
 

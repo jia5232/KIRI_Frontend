@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,16 +7,13 @@ import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
 import 'package:kiri/common/provider/dio_provider.dart';
 import 'package:kiri/post/component/post_popup_dialog.dart';
-import 'package:kiri/post/provider/post_form_screen_provider.dart';
 import 'package:kiri/post/provider/post_repository_provider.dart';
 import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 import 'package:kiri/post/view/post_update_form_screen.dart';
-
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
-import '../../member/view/login_screen.dart';
 import '../component/post_card.dart';
 
 class PostScreen extends ConsumerStatefulWidget {
