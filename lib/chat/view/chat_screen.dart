@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kiri/common/const/colors.dart';
 
 import '../component/chat_message.dart';
@@ -30,7 +29,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final messages = ref.read(chatMessagesProvider.notifier);
       messages.addMessage(message);
       _animatedListKey.currentState?.insertItem(messages.state.length-1);
-      //인덱스 0이 아니라 리스트 제일 뒤에 넣고싶어!
     });
 
     final chatRoomId = ref.read(chatRoomIdProvider);
@@ -65,7 +63,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 children: [
                   Expanded(
@@ -162,15 +160,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _scrollToBottom() {
-    //새로운 메시지가 AnimatedList에 추가될 때, 리스트의 높이가 바뀌고 maxScrollExtent도 업데이트되어야 하는데,
-    // 만약 스크롤을 높이가 변경되기 전에 호출하면, 스크롤은 완전한 높이를 인식하지 못하고 중간에서 멈출 수 있기 때문에 짧은 delay를 주고 새로운 높이를 계산할 시간을 준다.
+    // 스크롤이 필요한지 확인합니다.
     if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent, // 맨 밑으로 스크롤
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+      // 현재 프레임이 렌더링된 후에 실행될 콜백을 스케줄링
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent + 50,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
       });
     }
   }
