@@ -12,6 +12,8 @@ class ChatMessagesStateNotifier extends StateNotifier<List<MessageResponseModel>
 
   // 새 메시지 추가 메소드
   void addMessage(MessageResponseModel message) {
-    state = [...state, message];
+    if (!state.any((m) => m.id == message.id)) {
+      state = [...state, message];
+    }
   }
 }

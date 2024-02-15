@@ -29,11 +29,19 @@ class WebSocketService {
   final FlutterSecureStorage storage;
   final Ref ref;
 
+  // 메시지 수신 시 실행할 콜백 함수
+  void Function(MessageResponseModel message)? onMessageReceivedCallback;
+
   WebSocketService({
     this.stompClient,
     required this.storage,
     required this.ref,
   });
+
+  // 콜백 함수를 설정하는 메서드
+  void setOnMessageReceivedCallback(void Function(MessageResponseModel message) callback) {
+    onMessageReceivedCallback = callback;
+  }
 
   void connect(int chatRoomId) async {
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
@@ -63,14 +71,18 @@ class WebSocketService {
 
     // 채팅방에 입장하자마자 구독 시작
     stompClient?.subscribe(
-      destination: 'sub/chatroom/$chatRoomId',
+      destination: '/sub/chatroom/$chatRoomId',
       callback: (frame) {
+        print(frame.toString());
+        print("here!");
         // 채팅방으로부터 메시지 받음
         if (frame.body != null) {
           print("Received: ${frame.body}");
           final Map<String, dynamic> messageJson = jsonDecode(frame.body!);
-          final MessageResponseModel message =
-              MessageResponseModel.fromJson(messageJson);
+          final MessageResponseModel message = MessageResponseModel.fromJson(messageJson);
+
+          onMessageReceivedCallback?.call(message);
+
           ref.read(chatMessagesProvider.notifier).addMessage(message);
         }
       },

@@ -277,7 +277,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     joinOnPressed: () async {
                       //글 작성자면 그냥 이동하도록, 작성자가 아니라면 joinChatRoom()하고 이동하도록 추후 수정 필요!
                       joinChatRoom(pItem.id);
-                      ref.read(webSocketServiceProvider).connect(detailedPostModel.chatRoomId);
+                      //chatRoomId 상태 변경
+                      ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
                       Navigator.push(
                         context,
                         MaterialPageRoute(

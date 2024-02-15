@@ -46,7 +46,7 @@ class ChatMessage extends StatelessWidget {
                         ),
                         SizedBox(width: 4.0),
                         Text(
-                          createdTime.toString(),
+                          '${createdTime.year}-${createdTime.month}-${createdTime.day} ${createdTime.hour}:${createdTime.minute}',
                           style: TextStyle(
                             fontSize: 10.0,
                           ),
