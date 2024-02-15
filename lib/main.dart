@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/view/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
@@ -27,6 +28,7 @@ class _App extends ConsumerWidget {
       routerConfig: router,
       theme: ThemeData(
         fontFamily: 'NotoSans',
+        primarySwatch: Colors.orange,
       ),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: [

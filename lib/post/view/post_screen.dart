@@ -12,6 +12,8 @@ import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 import 'package:kiri/post/view/post_update_form_screen.dart';
+import '../../chat/view/chat_screen.dart';
+import '../../chat/websocket/web_socket_service.dart';
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
 import '../component/post_card.dart';
@@ -74,6 +76,28 @@ class _PostScreenState extends ConsumerState<PostScreen> {
         );
       },
     );
+  }
+
+ Future<void> joinChatRoom(int postId) async {
+    final dio = ref.read(dioProvider);
+    try {
+      final resp = await dio.post(
+        "http://$ip/chatrooms/join/$postId",
+        options: Options(
+          headers: {
+            'accessToken': 'true',
+          },
+        ),
+      );
+      if (resp.statusCode == 200) {
+        print("return true!");
+      } else {
+        print(resp.statusCode);
+        print(resp.toString());
+      }
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   @override
@@ -250,8 +274,16 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     nowMember: detailedPostModel.nowMember,
                     cost: detailedPostModel.cost,
                     isAuthor: detailedPostModel.isAuthor,
-                    joinOnPressed: () {
-                      print('join button clicked!');
+                    joinOnPressed: () async {
+                      //글 작성자면 그냥 이동하도록, 작성자가 아니라면 joinChatRoom()하고 이동하도록 추후 수정 필요!
+                      joinChatRoom(pItem.id);
+                      ref.read(webSocketServiceProvider).connect(detailedPostModel.chatRoomId);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(),
+                        ),
+                      );
                     },
                     deleteOnPressed: () {
                       noticeBeforeDeleteDialog(context, pItem.id);
