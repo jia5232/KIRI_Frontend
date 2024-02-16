@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kiri/chat/view/chat_list_screen.dart';
+import 'package:kiri/chat/view/chat_screen.dart';
 import 'package:kiri/common/view/root_tab.dart';
 import 'package:kiri/common/view/splash_screen.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
@@ -43,6 +45,16 @@ class AuthProvider extends ChangeNotifier {
           path: '/login',
           name: LoginScreen.routeName,
           builder: (context, state) => LoginScreen(),
+        ),
+        GoRoute(
+          path: '/chatList',
+          name: ChatListScreen.routeName,
+          builder: (context, state) => ChatListScreen(),
+        ),
+        GoRoute(
+          path: '/chat',
+          name: ChatScreen.routeName,
+          builder: (context, state) => ChatScreen(),
         ),
       ];
 

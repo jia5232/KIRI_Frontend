@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiri/common/const/colors.dart';
 
 import '../component/chat_message.dart';
@@ -8,6 +9,8 @@ import '../provider/chat_messages_state_notifier_provider.dart';
 import '../websocket/web_socket_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'chat';
+
   const ChatScreen({super.key});
 
   @override
@@ -160,13 +163,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _scrollToBottom() {
-    // 스크롤이 필요한지 확인합니다.
+    // 스크롤이 필요한지 확인
     if (_scrollController.hasClients) {
       // 현재 프레임이 렌더링된 후에 실행될 콜백을 스케줄링
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent + 50,
+            _scrollController.position.maxScrollExtent,
             duration: Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -186,7 +189,8 @@ class _Top extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () {
-            print("clicked!!");
+            context.goNamed('home');
+            // bottom Navigator bar 인덱스 1번으로 가게 하고싶당...
           },
           icon: Icon(Icons.arrow_back_ios_new),
         ),

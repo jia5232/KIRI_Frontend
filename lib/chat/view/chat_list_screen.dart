@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kiri/chat/component/chat_room_card.dart';
 
 class ChatListScreen extends StatefulWidget {
+  static String get routeName => 'chatList';
+
   const ChatListScreen({super.key});
 
   @override

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiri/common/const/colors.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
@@ -275,16 +276,43 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     cost: detailedPostModel.cost,
                     isAuthor: detailedPostModel.isAuthor,
                     joinOnPressed: () async {
-                      //글 작성자면 그냥 이동하도록, 작성자가 아니라면 joinChatRoom()하고 이동하도록 추후 수정 필요!
-                      joinChatRoom(pItem.id);
-                      //chatRoomId 상태 변경
-                      ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(),
+                      //글 작성자면 그냥 이동하도록, 작성자가 아니라면 joinChatRoom()하고 이동하도록
+                      final dio = ref.read(dioProvider);
+                      final resp = await dio.get(
+                        'http://$ip/chatrooms/is-joined/${pItem.id}',
+                        options: Options(
+                          headers: {
+                            'accessToken': 'true',
+                          },
                         ),
                       );
+
+                      final isMemberJoinedChatRoom = resp.data;
+                      if (!isMemberJoinedChatRoom) {
+                        //아직 join되지 않은 경우에만 join하도록 -> 인원 초과시 예외처리 추후 필요!
+                        joinChatRoom(pItem.id);
+
+                        //chatRoomId 상태 변경
+                        ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
+                        context.goNamed('chat');
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => ChatScreen(),
+                        //   ),
+                        // );
+                      } else{ //이미 join된 경우면 그냥 넘어가도록
+                        //chatRoomId 상태 변경
+                        ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
+                        context.goNamed('chat');
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => ChatScreen(),
+                        //   ),
+                        // );
+                      }
+
                     },
                     deleteOnPressed: () {
                       noticeBeforeDeleteDialog(context, pItem.id);

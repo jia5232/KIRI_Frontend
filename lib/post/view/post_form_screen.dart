@@ -483,8 +483,8 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                   ),
                                 );
                                 if (resp.statusCode == 200) {
-                                  getPostResultDialog(
-                                      context, "글 등록이 완료되었습니다.");
+                                  //글 작성자는 글을 작성할 때 joinChatRoom() 처리해둔다. -> 백엔드에서 처리함
+                                  getPostResultDialog(context, "글 등록이 완료되었습니다.");
                                 }
                               } catch (e) {
                                 getNoticeDialog(context, "에러가 발생했습니다!");
