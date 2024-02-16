@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kiri/chat/view/chat_list_screen.dart';
 import 'package:kiri/chat/view/chat_screen.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/view/post_screen.dart';
@@ -46,7 +47,7 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         controller: controller,
         children: [
           PostScreen(),
-          ChatScreen(),
+          ChatListScreen(),
           MyPageScreen(),
         ],
       ),

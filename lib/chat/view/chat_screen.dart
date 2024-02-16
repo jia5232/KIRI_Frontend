@@ -119,14 +119,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   padding: const EdgeInsets.all(4.0),
                   child: Icon(
                     Icons.arrow_forward,
-                    size: 20.0,
+                    size: 18.0,
                   ),
                 ),
                 Text("보문역"),
                 SizedBox(width: 8.0),
                 Icon(
                   Icons.person,
-                  size: 20.0,
+                  size: 18.0,
                 ),
                 Text("3"),
               ],
