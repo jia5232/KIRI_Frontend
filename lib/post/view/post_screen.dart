@@ -13,7 +13,6 @@ import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 import 'package:kiri/post/view/post_update_form_screen.dart';
-import '../../chat/view/chat_screen.dart';
 import '../../chat/websocket/web_socket_service.dart';
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
