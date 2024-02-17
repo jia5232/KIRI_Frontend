@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kiri/chat/view/chat_list_screen.dart';
+import 'package:kiri/chat/view/chat_screen.dart';
 import 'package:kiri/common/view/root_tab.dart';
 import 'package:kiri/common/view/splash_screen.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
@@ -32,7 +34,12 @@ class AuthProvider extends ChangeNotifier {
         GoRoute(
           path: '/',
           name: RootTab.routeName,
-          builder: (context, state) => RootTab(),
+          builder: (context, state) {
+            final tabIndex = state.queryParameters['tabIndex'] != null
+                ? int.tryParse(state.queryParameters['tabIndex']!) ?? 0
+                : 0; // 기본적으로 첫 번째 탭을 보여준다.
+            return RootTab(initialIndex: tabIndex);
+          },
         ),
         GoRoute(
           path: '/splash',
@@ -43,6 +50,16 @@ class AuthProvider extends ChangeNotifier {
           path: '/login',
           name: LoginScreen.routeName,
           builder: (context, state) => LoginScreen(),
+        ),
+        GoRoute(
+          path: '/chatList',
+          name: ChatListScreen.routeName,
+          builder: (context, state) => ChatListScreen(),
+        ),
+        GoRoute(
+          path: '/chat',
+          name: ChatScreen.routeName,
+          builder: (context, state) => ChatScreen(),
         ),
       ];
 

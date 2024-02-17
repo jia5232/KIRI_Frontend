@@ -8,6 +8,7 @@ part of 'post_model.dart';
 
 PostModel _$PostModelFromJson(Map<String, dynamic> json) => PostModel(
       id: json['id'] as int,
+      chatRoomId: json['chatRoomId'] as int,
       isFromSchool: json['isFromSchool'] as bool,
       depart: json['depart'] as String,
       arrive: json['arrive'] as String,
@@ -20,6 +21,7 @@ PostModel _$PostModelFromJson(Map<String, dynamic> json) => PostModel(
 
 Map<String, dynamic> _$PostModelToJson(PostModel instance) => <String, dynamic>{
       'id': instance.id,
+      'chatRoomId': instance.chatRoomId,
       'isFromSchool': instance.isFromSchool,
       'depart': instance.depart,
       'arrive': instance.arrive,

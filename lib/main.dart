@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kiri/common/view/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:kiri/member/provider/auth_provider.dart';
 
 import 'common/provider/router_provider.dart';
 
@@ -27,6 +23,7 @@ class _App extends ConsumerWidget {
       routerConfig: router,
       theme: ThemeData(
         fontFamily: 'NotoSans',
+        primarySwatch: Colors.orange,
       ),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: [

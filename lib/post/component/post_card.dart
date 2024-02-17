@@ -13,15 +13,16 @@ class PostCard extends StatelessWidget {
   final int nowMember;
   final bool isAuthor;
 
-  const PostCard(
-      {required this.isFromSchool,
-      required this.depart,
-      required this.arrive,
-      required this.departTime,
-      required this.maxMember,
-      required this.nowMember,
-      required this.isAuthor,
-      super.key});
+  const PostCard({
+    required this.isFromSchool,
+    required this.depart,
+    required this.arrive,
+    required this.departTime,
+    required this.maxMember,
+    required this.nowMember,
+    required this.isAuthor,
+    super.key,
+  });
 
   factory PostCard.fromModel({required PostModel postModel}) {
     return PostCard(
@@ -68,7 +69,7 @@ class PostCard extends StatelessWidget {
               children: [
                 Text(
                   '${departTimeList[0]}일 ${departTimeList[1]} 출발',
-                  style: TextStyle(fontSize:16.0, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
                 ),
                 SizedBox(
                   height: 4.0,

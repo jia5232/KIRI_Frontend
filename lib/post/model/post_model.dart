@@ -6,6 +6,7 @@ part 'post_model.g.dart';
 @JsonSerializable()
 class PostModel {
   final int id;
+  final int chatRoomId;
   final bool isFromSchool;
   final String depart;
   final String arrive;
@@ -21,6 +22,7 @@ class PostModel {
 
   PostModel({
     required this.id,
+    required this.chatRoomId,
     required this.isFromSchool,
     required this.depart,
     required this.arrive,
