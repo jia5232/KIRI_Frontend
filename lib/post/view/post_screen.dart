@@ -286,7 +286,6 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                           },
                         ),
                       );
-
                       final isMemberJoinedChatRoom = resp.data;
                       if (!isMemberJoinedChatRoom) {
                         //아직 join되지 않은 경우에만 join하도록 -> 인원 초과시 예외처리 추후 필요!
@@ -295,24 +294,11 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                         //chatRoomId 상태 변경
                         ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
                         context.goNamed('chat');
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => ChatScreen(),
-                        //   ),
-                        // );
                       } else{ //이미 join된 경우면 그냥 넘어가도록
                         //chatRoomId 상태 변경
                         ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
                         context.goNamed('chat');
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => ChatScreen(),
-                        //   ),
-                        // );
                       }
-
                     },
                     deleteOnPressed: () {
                       noticeBeforeDeleteDialog(context, pItem.id);

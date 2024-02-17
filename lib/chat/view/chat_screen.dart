@@ -1,8 +1,15 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kiri/chat/provider/post_info_state_notifier_provider.dart';
 import 'package:kiri/common/const/colors.dart';
 
+import '../../common/const/data.dart';
+import '../../common/provider/dio_provider.dart';
+import '../../post/model/post_model.dart';
 import '../component/chat_message.dart';
 import '../model/message_response_model.dart';
 import '../provider/chat_messages_state_notifier_provider.dart';
@@ -27,15 +34,69 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
 
+    // 현재 채팅방이 연결된 post 정보를 가져온다.
+    loadPostInfo();
+
+    // 현재 채팅방의 이전 메시지를 불러온다.
+    loadPreviousMessages();
+
     final webSocketService = ref.read(webSocketServiceProvider);
-    webSocketService.setOnMessageReceivedCallback((MessageResponseModel message) {
+    webSocketService
+        .setOnMessageReceivedCallback((MessageResponseModel message) {
       final messages = ref.read(chatMessagesProvider.notifier);
       messages.addMessage(message);
-      _animatedListKey.currentState?.insertItem(messages.state.length-1);
+      _animatedListKey.currentState?.insertItem(messages.state.length - 1);
     });
 
     final chatRoomId = ref.read(chatRoomIdProvider);
     webSocketService.connect(chatRoomId);
+  }
+
+  Future<void> loadPreviousMessages() async {
+    final chatRoomId = ref.read(chatRoomIdProvider);
+
+    final dio = ref.read(dioProvider);
+    final resp = await dio.get(
+      'http://$ip/history/$chatRoomId',
+      options: Options(
+        headers: {
+          'accessToken': 'true',
+        },
+      ),
+    );
+    if (resp.statusCode == 200) {
+      final List<dynamic> messageJsonList = resp.data;
+      final List<MessageResponseModel> messages = messageJsonList
+          .map((json) => MessageResponseModel.fromJson(json))
+          .toList();
+      ref.read(chatMessagesProvider.notifier).setMessages(messages);
+      _scrollToBottom();
+    } else {
+      print("${resp.statusCode}: ${resp.data}");
+    }
+  }
+
+  Future<void> loadPostInfo() async {
+    final chatRoomId = ref.read(chatRoomIdProvider);
+    final dio = ref.read(dioProvider);
+    try {
+      final resp = await dio.get(
+        'http://$ip/posts/info/$chatRoomId',
+        options: Options(
+          headers: {
+            'accessToken': 'true',
+          },
+        ),
+      );
+      if (resp.statusCode == 200) {
+        final postModel = PostModel.fromJson(resp.data);
+        ref.read(postInfoProvider.notifier).setPost(postModel);
+      } else {
+        print("${resp.statusCode}: ${resp.data}");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   @override
@@ -47,20 +108,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           children: [
             _Top(),
-            _buildTitle(context),
+            _buildTitle(context, ref),
             Expanded(
-              child: AnimatedList(
-                key: _animatedListKey,
+              child: ListView.builder(
                 reverse: false,
                 controller: _scrollController,
-                initialItemCount: messages.length,
-                itemBuilder: (context, index, animation) {
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
                   final message = messages[index];
                   return ChatMessage(
                     content: message.content,
                     nickname: message.nickname,
                     createdTime: message.createdTime,
-                    animation: animation,
                   );
                 },
               ),
@@ -98,53 +157,59 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget _buildTitle(context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 60.0,
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade400),
-          bottom: BorderSide(color: Colors.grey.shade400),
-          left: BorderSide(color: Colors.transparent),
-          right: BorderSide(color: Colors.transparent),
+  Widget _buildTitle(BuildContext contex, WidgetRef ref) {
+    final post = ref.watch(postInfoProvider);
+
+    if (post != null) {
+      return Container(
+        width: MediaQuery.of(context).size.width,
+        height: 60.0,
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.grey.shade400),
+            bottom: BorderSide(color: Colors.grey.shade400),
+            left: BorderSide(color: Colors.transparent),
+            right: BorderSide(color: Colors.transparent),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Text("국민대학교"),
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Icon(
-                    Icons.arrow_forward,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(post.depart),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      size: 18.0,
+                    ),
+                  ),
+                  Text(post.arrive),
+                  SizedBox(width: 8.0),
+                  Icon(
+                    Icons.person,
                     size: 18.0,
                   ),
-                ),
-                Text("보문역"),
-                SizedBox(width: 8.0),
-                Icon(
-                  Icons.person,
-                  size: 18.0,
-                ),
-                Text("3"),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("2024.01.19"),
-                Text('13:00 만남'),
-              ],
-            ),
-          ],
+                  Text(post.nowMember.toString()),
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('${post.departTime.split(" ")[0]}일 ${post.departTime.split(" ")[1]}분 출발'),
+                  // Text('13:00 만남'),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return SizedBox();
+    }
   }
 
   void _handleSubmitted(String text) {
@@ -169,7 +234,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
+            _scrollController.position.maxScrollExtent + 50,
             duration: Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -190,7 +255,7 @@ class _Top extends StatelessWidget {
         IconButton(
           onPressed: () {
             context.goNamed('home');
-            // bottom Navigator bar 인덱스 1번으로 가게 하고싶당...
+            // bottom Navigator bar 인덱스 1번으로 가게 하고 싶당...
           },
           icon: Icon(Icons.arrow_back_ios_new),
         ),
