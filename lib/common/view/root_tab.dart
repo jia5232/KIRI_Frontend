@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kiri/chat/view/chat_list_screen.dart';
-import 'package:kiri/chat/view/chat_screen.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/view/post_screen.dart';
 
@@ -9,8 +8,12 @@ import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
   static String get routeName => 'home';
+  final int initialIndex;
 
-  const RootTab({super.key});
+  const RootTab({
+    required this.initialIndex,
+    super.key,
+  });
 
   @override
   State<RootTab> createState() => _RootTabState();
@@ -23,8 +26,9 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    controller = TabController(length: 3, vsync: this);
+    controller = TabController(length: 3, vsync: this, initialIndex: widget.initialIndex);
     controller.addListener(tabListener);
+    index = widget.initialIndex;
   }
 
   void tabListener() {

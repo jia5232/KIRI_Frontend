@@ -254,8 +254,8 @@ class _Top extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () {
-            context.goNamed('home');
-            // bottom Navigator bar 인덱스 1번으로 가게 하고 싶당...
+            context.go('/?tabIndex=1');
+            // bottom Navigator bar 인덱스 1번으로 가게함.
           },
           icon: Icon(Icons.arrow_back_ios_new),
         ),

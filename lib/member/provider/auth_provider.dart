@@ -34,7 +34,12 @@ class AuthProvider extends ChangeNotifier {
         GoRoute(
           path: '/',
           name: RootTab.routeName,
-          builder: (context, state) => RootTab(),
+          builder: (context, state) {
+            final tabIndex = state.queryParameters['tabIndex'] != null
+                ? int.tryParse(state.queryParameters['tabIndex']!) ?? 0
+                : 0; // 기본적으로 첫 번째 탭을 보여준다.
+            return RootTab(initialIndex: tabIndex);
+          },
         ),
         GoRoute(
           path: '/splash',
