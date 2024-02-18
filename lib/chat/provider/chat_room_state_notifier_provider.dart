@@ -66,8 +66,8 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
         state = resp;
       }
     } catch (e, stackTrace) {
-      print('Error: $e');
-      print('Stack Trace: $stackTrace');
+      // print('Error: $e');
+      // print('Stack Trace: $stackTrace');
       state = CursorPaginationModelError(message: e.toString());
       if (!_mounted) return;
       state = CursorPaginationModelError(message: '데이터를 가져오지 못했습니다.');

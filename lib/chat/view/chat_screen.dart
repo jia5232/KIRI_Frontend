@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kiri/chat/provider/post_info_state_notifier_provider.dart';
 import 'package:kiri/common/const/colors.dart';
 
+import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
 import '../../common/provider/dio_provider.dart';
 import '../../post/model/post_model.dart';
@@ -99,6 +100,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  void noticeBeforeLeaveDialog(BuildContext context) async {
+    final chatRoomId = ref.read(chatRoomIdProvider);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: "모임에서 정말 나가시겠습니까?",
+          buttonText: "나가기",
+          onPressed: () async {
+            try {
+              final dio = ref.read(dioProvider);
+              final resp = await dio.delete(
+                "http://$ip/chatrooms/leave/$chatRoomId",
+                options: Options(
+                  headers: {
+                    'accessToken': 'true',
+                  },
+                ),
+              );
+              if (resp.statusCode == 200) {
+                context.go('/?tabIndex=1');
+              } else {
+                print("${resp.statusCode}: ${resp.data}");
+              }
+            } catch (e) {
+              print(e.toString());
+            }
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider);
@@ -107,7 +141,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _Top(),
+            _Top(context),
             _buildTitle(context, ref),
             Expanded(
               child: ListView.builder(
@@ -157,7 +191,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget _buildTitle(BuildContext contex, WidgetRef ref) {
+  Widget _buildTitle(BuildContext context, WidgetRef ref) {
     final texyStyle = TextStyle(
       fontSize: 14.0,
     );
@@ -256,13 +290,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
     }
   }
-}
 
-class _Top extends StatelessWidget {
-  const _Top({super.key});
+  Widget _Top(BuildContext context) {
+    final post = ref.watch(postInfoProvider);
 
-  @override
-  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -273,6 +304,16 @@ class _Top extends StatelessWidget {
           },
           icon: Icon(Icons.arrow_back_ios_new),
         ),
+        if(post?.isAuthor==false) //글 작성자가 아닌 경우에만 나갈 수 있게 한다.
+          IconButton(
+            onPressed: () {
+              noticeBeforeLeaveDialog(context);
+            },
+            icon: Icon(
+              Icons.logout,
+              color: Colors.red,
+            ),
+          ),
       ],
     );
   }
