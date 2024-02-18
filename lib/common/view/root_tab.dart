@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/chat/view/chat_list_screen.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/post/view/post_screen.dart';
 
+import '../../chat/provider/chat_room_state_notifier_provider.dart';
+import '../../member/provider/member_state_notifier_provider.dart';
 import '../../member/view/mypage_screen.dart';
+import '../../post/provider/post_state_notifier_provider.dart';
 import '../const/colors.dart';
 
-class RootTab extends StatefulWidget {
+class RootTab extends ConsumerStatefulWidget {
   static String get routeName => 'home';
   final int initialIndex;
 
@@ -16,10 +20,10 @@ class RootTab extends StatefulWidget {
   });
 
   @override
-  State<RootTab> createState() => _RootTabState();
+  ConsumerState<RootTab> createState() => _RootTabState();
 }
 
-class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
+class _RootTabState extends ConsumerState<RootTab> with SingleTickerProviderStateMixin {
   late TabController controller;
   int index = 0;
 
@@ -35,6 +39,19 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
     setState(() {
       index = controller.index;
     });
+
+    // 탭 전환 시 특정 스크린의 상태를 새로고침
+    switch (index) {
+      case 0:
+        ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
+        break;
+      case 1:
+        ref.read(chatRoomStateNotifierProvider.notifier).paginate();
+        break;
+      case 2:
+        ref.read(memberStateNotifierProvider);
+        break;
+    }
   }
 
   @override
