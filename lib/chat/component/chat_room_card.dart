@@ -8,8 +8,8 @@ class ChatRoomCard extends StatelessWidget {
   final String arrive;
   final String departTime;
   final int nowMember;
-  final String lastMessageContent;
-  final String messageCreatedTime;
+  final String? lastMessageContent;
+  final String? messageCreatedTime;
 
   const ChatRoomCard({
     required this.chatRoomId,
@@ -17,8 +17,8 @@ class ChatRoomCard extends StatelessWidget {
     required this.arrive,
     required this.departTime,
     required this.nowMember,
-    required this.lastMessageContent,
-    required this.messageCreatedTime,
+    this.lastMessageContent,
+    this.messageCreatedTime,
     super.key,
   });
 
@@ -37,7 +37,7 @@ class ChatRoomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
       width: MediaQuery.of(context).size.width,
       height: 86.0,
       decoration: BoxDecoration(
@@ -82,14 +82,24 @@ class ChatRoomCard extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                lastMessageContent,
-              ),
-            ],
-          ),
+          if(lastMessageContent!=null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  lastMessageContent!,
+                ),
+              ],
+            ),
+          if(lastMessageContent==null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "",
+                ),
+              ],
+            ),
         ],
       ),
     );

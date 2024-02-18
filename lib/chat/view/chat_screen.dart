@@ -158,6 +158,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildTitle(BuildContext contex, WidgetRef ref) {
+    final texyStyle = TextStyle(
+      fontSize: 14.0,
+    );
+
     final post = ref.watch(postInfoProvider);
 
     if (post != null) {
@@ -179,18 +183,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             children: [
               Row(
                 children: [
-                  Text(post.depart),
+                  Text(
+                    post.depart,
+                    style: texyStyle,
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Icon(
                       Icons.arrow_forward,
-                      size: 18.0,
+                      size: 16.0,
                     ),
                   ),
-                  Text(post.arrive),
-                  SizedBox(width: 8.0),
+                  Text(
+                    post.arrive,
+                    style: texyStyle,
+                  ),
+                  SizedBox(width: 4.0),
                   Icon(
                     Icons.person,
+                    color: PRIMARY_COLOR,
                     size: 18.0,
                   ),
                   Text(post.nowMember.toString()),
@@ -199,7 +210,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('${post.departTime.split(" ")[0]}일 ${post.departTime.split(" ")[1]}분 출발'),
+                  Text(
+                    '${post.departTime.split(" ")[0]}일 ${post.departTime.split(" ")[1]}분 출발',
+                    style: texyStyle,
+                  ),
                   // Text('13:00 만남'),
                 ],
               ),

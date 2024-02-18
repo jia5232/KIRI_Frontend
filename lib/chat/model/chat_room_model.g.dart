@@ -12,11 +12,11 @@ ChatRoomModel _$ChatRoomModelFromJson(Map<String, dynamic> json) =>
       depart: json['depart'] as String,
       arrive: json['arrive'] as String,
       departTime:
-          ChatRoomModel.formatLocalDateTime(json['departTime'] as String),
+          ChatRoomModel.formatLocalDateTime(json['departTime'] as String?),
       nowMember: json['nowMember'] as int,
-      lastMessageContent: json['lastMessageContent'] as String,
+      lastMessageContent: json['lastMessageContent'] as String?,
       messageCreatedTime: ChatRoomModel.formatLocalDateTime(
-          json['messageCreatedTime'] as String),
+          json['messageCreatedTime'] as String?),
     );
 
 Map<String, dynamic> _$ChatRoomModelToJson(ChatRoomModel instance) =>

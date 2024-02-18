@@ -33,12 +33,12 @@ class PostPopupDialog extends StatelessWidget {
   });
 
   Widget _button(
-    VoidCallback action,
-    FaIcon icon,
-  ) {
+      VoidCallback action,
+      FaIcon icon,
+      ) {
     return SizedBox(
-      height: 40.0,
-      width: 40.0,
+      height: 30.0,
+      width: 30.0,
       child: Ink(
         decoration: BoxDecoration(
           color: Colors.transparent,
@@ -48,7 +48,7 @@ class PostPopupDialog extends StatelessWidget {
           onTap: action,
           customBorder: RoundedRectangleBorder(
             borderRadius:
-                BorderRadius.circular(4),
+            BorderRadius.circular(4),
           ),
           child: Padding(
             padding: EdgeInsets.all(8.0),
@@ -82,7 +82,7 @@ class PostPopupDialog extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
           borderRadius:
-              BorderRadius.all(Radius.circular(12.0)), //Dialog 내부 컨테이너의 border
+          BorderRadius.all(Radius.circular(12.0)), //Dialog 내부 컨테이너의 border
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -195,9 +195,9 @@ class _MainText extends StatelessWidget {
 
   const _MainText(
       {required this.isFromSchool,
-      required this.depart,
-      required this.arrive,
-      super.key});
+        required this.depart,
+        required this.arrive,
+        super.key});
 
   @override
   Widget build(BuildContext context) {
