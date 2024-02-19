@@ -110,6 +110,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           buttonText: "나가기",
           onPressed: () async {
             try {
+              // web socket 연결 끊기
+              final webSocketService = ref.read(webSocketServiceProvider);
+              webSocketService.disconnect();
+
+              // 서버에 채팅방 나가기 요청 보내기
               final dio = ref.read(dioProvider);
               final resp = await dio.delete(
                 "http://$ip/chatrooms/leave/$chatRoomId",
