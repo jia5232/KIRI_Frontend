@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiri/chat/model/message_request_model.dart';
 import 'package:kiri/chat/provider/chat_messages_state_notifier_provider.dart';
 import 'package:kiri/common/const/data.dart';
@@ -11,6 +12,7 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 
+import '../../member/provider/member_state_notifier_provider.dart';
 import '../model/message_response_model.dart';
 
 final chatRoomIdProvider =
@@ -140,6 +142,8 @@ class WebSocketService {
       await storage.write(key: ACCESS_TOKEN_KEY, value: newAccessToken);
     } on DioException catch (e) {
       print(e.toString());
+      print("refreshToken이 만료되었습니다!");
+      ref.read(memberStateNotifierProvider.notifier).logout();
     }
     stompClient?.deactivate();
 
