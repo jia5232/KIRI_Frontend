@@ -156,8 +156,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
                   final message = messages[index];
-                  // print("Message type: ${message.type}");
-                  if(message.type == 'ENTER'){
+                  if(message.type == 'ENTER' || message.type == 'LEAVE'){
                     return ChatNotice(content: message.content);
                   } else {
                     return ChatMessage(

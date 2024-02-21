@@ -15,7 +15,7 @@ class ChatNotice extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
           child: Text(
             content,
             style: TextStyle(
