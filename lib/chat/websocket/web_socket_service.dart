@@ -73,8 +73,6 @@ class WebSocketService {
     stompClient?.subscribe(
       destination: '/sub/chatroom/$chatRoomId',
       callback: (frame) {
-        print(frame.toString());
-        print("here!");
         // 채팅방으로부터 메시지 받음
         if (frame.body != null) {
           print("Received: ${frame.body}");

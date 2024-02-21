@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kiri/chat/component/chat_notice.dart';
 import 'package:kiri/chat/provider/post_info_state_notifier_provider.dart';
 import 'package:kiri/common/const/colors.dart';
 
@@ -155,11 +156,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
                   final message = messages[index];
-                  return ChatMessage(
-                    content: message.content,
-                    nickname: message.nickname,
-                    createdTime: message.createdTime,
-                  );
+                  // print("Message type: ${message.type}");
+                  if(message.type == 'ENTER'){
+                    return ChatNotice(content: message.content);
+                  } else {
+                    return ChatMessage(
+                      content: message.content,
+                      nickname: message.nickname,
+                      createdTime: message.createdTime,
+                    );
+                  }
                 },
               ),
             ),
