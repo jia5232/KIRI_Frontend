@@ -6,6 +6,7 @@ part 'chat_room_model.g.dart';
 @JsonSerializable()
 class ChatRoomModel {
   final int chatRoomId;
+  final int unreadMessageCount;
   final String depart;
   final String arrive;
   @JsonKey(
@@ -21,6 +22,7 @@ class ChatRoomModel {
 
   ChatRoomModel({
     required this.chatRoomId,
+    required this.unreadMessageCount,
     required this.depart,
     required this.arrive,
     required this.departTime,

@@ -4,6 +4,7 @@ import 'package:kiri/common/const/colors.dart';
 
 class ChatRoomCard extends StatelessWidget {
   final int chatRoomId;
+  final int unreadMessageCount;
   final String depart;
   final String arrive;
   final String departTime;
@@ -13,6 +14,7 @@ class ChatRoomCard extends StatelessWidget {
 
   const ChatRoomCard({
     required this.chatRoomId,
+    required this.unreadMessageCount,
     required this.depart,
     required this.arrive,
     required this.departTime,
@@ -25,6 +27,7 @@ class ChatRoomCard extends StatelessWidget {
   factory ChatRoomCard.fromModel({required ChatRoomModel chatRoomModel}) {
     return ChatRoomCard(
       chatRoomId: chatRoomModel.chatRoomId,
+      unreadMessageCount: chatRoomModel.unreadMessageCount,
       depart: chatRoomModel.depart,
       arrive: chatRoomModel.arrive,
       departTime: chatRoomModel.departTime,
@@ -82,16 +85,47 @@ class ChatRoomCard extends StatelessWidget {
               ),
             ],
           ),
-          if(lastMessageContent!=null)
+          if (lastMessageContent != null)
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Row(
+                  children: [
+                    Text(
+                      lastMessageContent!,
+                    ),
+                    SizedBox(width: 4.0),
+                    if(unreadMessageCount>0)
+                      Container(
+                        height: 20.0,
+                        width: 20.0,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            unreadMessageCount.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              height: 1,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                  ],
+                ),
                 Text(
-                  lastMessageContent!,
+                  messageCreatedTime!,
+                  style: TextStyle(
+                    fontSize: 12.0,
+                  ),
                 ),
               ],
             ),
-          if(lastMessageContent==null)
+          if (lastMessageContent == null)
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
