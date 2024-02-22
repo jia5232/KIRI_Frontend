@@ -55,6 +55,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> loadPreviousMessages() async {
+    // 해당 채팅방에서 마지막에 존재한 시간을 업데이트
+    await updateLastRead();
+
     final chatRoomId = ref.read(chatRoomIdProvider);
 
     final dio = ref.read(dioProvider);
@@ -93,6 +96,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (resp.statusCode == 200) {
         final postModel = PostModel.fromJson(resp.data);
         ref.read(postInfoProvider.notifier).setPost(postModel);
+      } else {
+        print("${resp.statusCode}: ${resp.data}");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  // 해당 채팅방에서 마지막에 존재한 시간을 업데이트
+  Future<void> updateLastRead() async {
+    final chatRoomId = ref.read(chatRoomIdProvider);
+    final dio = ref.read(dioProvider);
+    try {
+      final resp = await dio.put(
+        'http://$ip/chatrooms/update-last-read/$chatRoomId',
+        options: Options(
+          headers: {
+            'accessToken': 'true',
+          },
+        ),
+      );
+      if (resp.statusCode == 200) {
+        print("update last read : success");
       } else {
         print("${resp.statusCode}: ${resp.data}");
       }
@@ -308,9 +334,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
-            context.go('/?tabIndex=1');
+          onPressed: () async {
+            // 해당 채팅방에서 마지막에 존재한 시간을 업데이트
+            await updateLastRead();
+
             // bottom Navigator bar 인덱스 1번으로 가게함.
+            context.go('/?tabIndex=1');
           },
           icon: Icon(Icons.arrow_back_ios_new),
         ),

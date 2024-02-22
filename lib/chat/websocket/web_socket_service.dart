@@ -60,7 +60,12 @@ class WebSocketService {
           await Future.delayed(Duration(seconds: 1));
         },
         stompConnectHeaders: {'Authorization': 'Bearer $accessToken'},
-        onWebSocketError: (dynamic error) => print(error.toString()),
+        onWebSocketError: (dynamic error) {
+          print(error.toString());
+          if (error.toString().contains("토큰이 만료되었습니다.")) {
+            refreshTokenAndReconnect();
+          }
+        },
       ),
     );
     stompClient?.activate();
