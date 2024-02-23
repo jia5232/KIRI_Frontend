@@ -227,7 +227,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       onSubmitted: _handleSubmitted,
                     ),
                   ),
-                  SizedBox(width: 8.0),
+                  SizedBox(width: 12.0),
                   TextButton(
                     onPressed: () {
                       _handleSubmitted(_textEditingController.text);
@@ -338,7 +338,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent + 70,
+            _scrollController.position.maxScrollExtent + 100,
             duration: Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
