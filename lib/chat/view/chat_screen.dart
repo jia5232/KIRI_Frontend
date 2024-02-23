@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kiri/chat/component/chat_notice.dart';
+import 'package:kiri/chat/component/others_chat_message.dart';
 import 'package:kiri/chat/provider/post_info_state_notifier_provider.dart';
 import 'package:kiri/common/const/colors.dart';
 
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
 import '../../common/provider/dio_provider.dart';
+import '../../member/model/member_model.dart';
+import '../../member/provider/member_state_notifier_provider.dart';
 import '../../post/model/post_model.dart';
-import '../component/chat_message.dart';
+import '../component/my_chat_message.dart';
 import '../model/message_response_model.dart';
 import '../provider/chat_messages_state_notifier_provider.dart';
 import '../websocket/web_socket_service.dart';
@@ -117,9 +120,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           },
         ),
       );
-      if (resp.statusCode == 200) {
-        print("update last read : success");
-      } else {
+      if (resp.statusCode != 200){
         print("${resp.statusCode}: ${resp.data}");
       }
     } catch (e) {
@@ -165,6 +166,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
+  Widget _buildChatMessage(BuildContext context, MessageResponseModel message) {
+    final memberState = ref.watch(memberStateNotifierProvider);
+    String nickname = "";
+
+    if (memberState is MemberModel) {
+      nickname = memberState.nickname;
+    }
+
+    if (message.nickname == nickname) {
+      return MyChatMessage(
+        content: message.content,
+        nickname: message.nickname,
+        createdTime: message.createdTime,
+      );
+    } else {
+      return OthersChatMessage(
+        content: message.content,
+        nickname: message.nickname,
+        createdTime: message.createdTime,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider);
@@ -185,11 +209,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   if(message.type == 'ENTER' || message.type == 'LEAVE'){
                     return ChatNotice(content: message.content);
                   } else {
-                    return ChatMessage(
-                      content: message.content,
-                      nickname: message.nickname,
-                      createdTime: message.createdTime,
-                    );
+                    return _buildChatMessage(context, message);
                   }
                 },
               ),
@@ -318,7 +338,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent + 50,
+            _scrollController.position.maxScrollExtent + 70,
             duration: Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
