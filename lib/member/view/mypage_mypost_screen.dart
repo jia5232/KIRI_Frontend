@@ -10,8 +10,8 @@ import '../../common/model/cursor_pagination_model.dart';
 import '../../common/provider/dio_provider.dart';
 import '../../post/component/post_card.dart';
 import '../../post/component/post_popup_dialog.dart';
+import '../../post/provider/my_post_state_notifier_provider.dart';
 import '../../post/provider/post_repository_provider.dart';
-import '../../post/provider/post_state_notifier_provider.dart';
 import '../../post/view/post_update_form_screen.dart';
 
 class MyPageMyPostScreen extends ConsumerStatefulWidget {
@@ -28,9 +28,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
     // 현재 위치가 최대 길이보다 조금 덜되는 위치까지 왔다면 새로운 데이터를 추가 요청.
     // 현재 컨트롤러 위치가(controller.offset) 컨트롤러의 최대 크기 - n 보다 크면 요청을 보낸다.
     if (controller.offset > controller.position.maxScrollExtent - 150) {
-      ref.read(postStateNotifierProvider.notifier).paginate(
-            fetchMore: true,
-          );
+      ref.read(myPostStateNotifierProvider.notifier).paginate(fetchMore: true);
     }
   }
 
@@ -39,7 +37,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
     super.initState();
     controller.addListener(scrollListener);
     Future.microtask(
-        () => ref.read(postStateNotifierProvider.notifier).getMyPosts());
+        () => ref.read(myPostStateNotifierProvider.notifier).paginate());
   }
 
   void noticeBeforeDeleteDialog(BuildContext context, int postId) async {
@@ -63,7 +61,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
             if (resp.statusCode == 200) {
               Navigator.pop(context);
               Navigator.pop(context);
-              await ref.read(postStateNotifierProvider.notifier).getMyPosts();
+              await ref.read(myPostStateNotifierProvider.notifier).paginate();
             }
           },
         );
@@ -73,7 +71,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(postStateNotifierProvider);
+    final data = ref.watch(myPostStateNotifierProvider);
 
     return DefaultLayout(
       child: SafeArea(
@@ -92,7 +90,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
 
   Widget _buildPostList(
       CursorPaginationModelBase data, WidgetRef ref, BuildContext context) {
-    final data = ref.watch(postStateNotifierProvider);
+    final data = ref.watch(myPostStateNotifierProvider);
     //postStateNotifierProvider가 postRepository에서 받아온 값을 그대로 돌려주므로 Future builder가 필요없어짐..
 
     if (data is CursorPaginationModelLoading) {

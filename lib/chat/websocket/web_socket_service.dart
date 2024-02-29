@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kiri/chat/model/message_request_model.dart';
 import 'package:kiri/chat/provider/chat_messages_state_notifier_provider.dart';
 import 'package:kiri/common/const/data.dart';

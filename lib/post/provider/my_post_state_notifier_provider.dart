@@ -1,20 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kiri/chat/repository/chat_room_repository.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
+import 'package:kiri/post/provider/post_repository_provider.dart';
 
-final chatRoomStateNotifierProvider = StateNotifierProvider<ChatRoomStateNotifier, CursorPaginationModelBase>(
-        (ref) {
-  final repository = ref.watch(chatRoomRepositoryProvider);
-  final initialLastPostId = 0;
+import '../repository/post_repository.dart';
 
-  final notifier = ChatRoomStateNotifier(
-    repository: repository,
-    lastPostId: initialLastPostId,
-  );
-  return notifier;
-});
+final myPostStateNotifierProvider =
+    StateNotifierProvider<MyPostStateNotifier, CursorPaginationModelBase>(
+  (ref) {
+    final repository = ref.watch(postRepositoryProvider);
+    const initialLastPostId = 0;
+    final notifier = MyPostStateNotifier(
+      repository: repository,
+      lastPostId: initialLastPostId,
+    );
+    return notifier;
+  },
+);
 
-class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
+class MyPostStateNotifier extends StateNotifier<CursorPaginationModelBase> {
   bool _mounted = true;
 
   @override
@@ -23,10 +26,10 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
     super.dispose();
   }
 
-  final ChatRoomRepository repository;
+  final PostRepository repository;
   int lastPostId;
 
-  ChatRoomStateNotifier({
+  MyPostStateNotifier({
     required this.repository,
     required this.lastPostId,
   }) : super(CursorPaginationModelLoading()) {
@@ -88,7 +91,7 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
         );
 
         // paginate 파라미터 변경
-        lastPostId = pState.data.last.chatRoomId; // 여기서 주의!!! id가 아니라 chatRoomId이당
+        lastPostId = pState.data.last.id;
       } else {
         // fetchMore가 false -> 데이터를 처음부터 가져오는 상황
         // 만약 데이터가 있는 상황이라면 기존 데이터를 보존한 채로 api 요청을 진행
@@ -106,7 +109,7 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
       }
 
       // resp: 새로 받아온 데이터
-      final resp = await repository.paginate(lastPostId);
+      final resp = await repository.getMyPosts(lastPostId);
 
       // Notifier가 dispose된 상태라면 작업을 수행하지 않는다.
       // 두번째 확인 -> 비동기 작업 후
@@ -140,7 +143,4 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
       state = CursorPaginationModelError(message: '데이터를 가져오지 못했습니다');
     }
   }
-
-
-
 }

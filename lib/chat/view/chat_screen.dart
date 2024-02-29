@@ -11,12 +11,14 @@ import 'package:kiri/common/const/colors.dart';
 
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
+import '../../common/model/cursor_pagination_model.dart';
 import '../../common/provider/dio_provider.dart';
 import '../../member/model/member_model.dart';
 import '../../member/provider/member_state_notifier_provider.dart';
 import '../../post/model/post_model.dart';
 import '../component/my_chat_message.dart';
 import '../model/message_response_model.dart';
+import '../provider/chat_history_provider.dart';
 import '../provider/chat_messages_state_notifier_provider.dart';
 import '../websocket/web_socket_service.dart';
 
@@ -43,7 +45,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     loadPostInfo();
 
     // 현재 채팅방의 이전 메시지를 불러온다.
-    loadPreviousMessages();
+    _scrollController.addListener(_loadMoreMessages);
 
     final webSocketService = ref.read(webSocketServiceProvider);
     webSocketService
@@ -57,30 +59,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     webSocketService.connect(chatRoomId);
   }
 
-  Future<void> loadPreviousMessages() async {
-    // 해당 채팅방에서 마지막에 존재한 시간을 업데이트
-    await updateLastRead();
+  @override
+  void dispose() {
+    _scrollController.removeListener(_loadMoreMessages);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-    final chatRoomId = ref.read(chatRoomIdProvider);
-
-    final dio = ref.read(dioProvider);
-    final resp = await dio.get(
-      'http://$ip/history/$chatRoomId',
-      options: Options(
-        headers: {
-          'accessToken': 'true',
-        },
-      ),
-    );
-    if (resp.statusCode == 200) {
-      final List<dynamic> messageJsonList = resp.data;
-      final List<MessageResponseModel> messages = messageJsonList
-          .map((json) => MessageResponseModel.fromJson(json))
-          .toList();
-      ref.read(chatMessagesProvider.notifier).setMessages(messages);
-      _scrollToBottom();
-    } else {
-      print("${resp.statusCode}: ${resp.data}");
+  void _loadMoreMessages() {
+    // reverse: true 상태에서는 스크롤이 리스트의 시작점에 도달했을 때를 감지해야 한당
+    if (_scrollController.offset >= _scrollController.position.maxScrollExtent - 30 &&
+        !_scrollController.position.outOfRange) {
+      ref.read(chatHistoryProvider.notifier).paginate(fetchMore: true);
     }
   }
 
@@ -166,32 +156,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget _buildChatMessage(BuildContext context, MessageResponseModel message) {
-    final memberState = ref.watch(memberStateNotifierProvider);
-    String nickname = "";
-
-    if (memberState is MemberModel) {
-      nickname = memberState.nickname;
-    }
-
-    if (message.nickname == nickname) {
-      return MyChatMessage(
-        content: message.content,
-        nickname: message.nickname,
-        createdTime: message.createdTime,
-      );
-    } else {
-      return OthersChatMessage(
-        content: message.content,
-        nickname: message.nickname,
-        createdTime: message.createdTime,
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final messages = ref.watch(chatMessagesProvider);
+    print("build!!");
+    final data = ref.watch(chatHistoryProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -200,19 +168,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _Top(context),
             _buildTitle(context, ref),
             Expanded(
-              child: ListView.builder(
-                reverse: false,
-                controller: _scrollController,
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  final message = messages[index];
-                  if(message.type == 'ENTER' || message.type == 'LEAVE'){
-                    return ChatNotice(content: message.content);
-                  } else {
-                    return _buildChatMessage(context, message);
-                  }
-                },
-              ),
+              child: _buildChatList(data, ref, context),
             ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -313,6 +269,66 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
     } else {
       return SizedBox();
+    }
+  }
+
+  Widget _buildChatList(CursorPaginationModelBase data, WidgetRef ref, BuildContext context){
+    final data = ref.watch(chatHistoryProvider);
+
+    if(data is CursorPaginationModelLoading){
+      return Center(
+        child: CircularProgressIndicator(
+          color: PRIMARY_COLOR,
+        ),
+      );
+    }
+
+    if (data is CursorPaginationModelError) {
+      print(data.message);
+      print(data.toString());
+      print(data.runtimeType);
+      return Center(
+        child: Text("데이터를 불러올 수 없습니다."),
+      );
+    }
+
+    final cp = data as CursorPaginationModel;
+
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: cp.data.length,
+      reverse: true,
+      itemBuilder: (context, index) {
+        final message = cp.data[index];
+        return _buildChatMessage(context, message);
+      },
+    );
+  }
+
+  Widget _buildChatMessage(BuildContext context, MessageResponseModel message) {
+    final memberState = ref.watch(memberStateNotifierProvider);
+    String nickname = "";
+
+    if(message.type == 'ENTER' || message.type == 'LEAVE'){
+      return ChatNotice(content: message.content);
+    }
+
+    if (memberState is MemberModel) {
+      nickname = memberState.nickname;
+    }
+
+    if (message.nickname == nickname) {
+      return MyChatMessage(
+        content: message.content,
+        nickname: message.nickname,
+        createdTime: message.createdTime,
+      );
+    } else {
+      return OthersChatMessage(
+        content: message.content,
+        nickname: message.nickname,
+        createdTime: message.createdTime,
+      );
     }
   }
 

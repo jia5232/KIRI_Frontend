@@ -1,20 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kiri/chat/repository/chat_room_repository.dart';
+import 'package:kiri/chat/model/message_response_model.dart';
+import 'package:kiri/chat/repository/chat_repository.dart';
+import 'package:kiri/chat/websocket/web_socket_service.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
 
-final chatRoomStateNotifierProvider = StateNotifierProvider<ChatRoomStateNotifier, CursorPaginationModelBase>(
+final chatHistoryProvider = StateNotifierProvider.autoDispose<ChatHistoryStateNotifier, CursorPaginationModelBase>(
         (ref) {
-  final repository = ref.watch(chatRoomRepositoryProvider);
-  final initialLastPostId = 0;
+  final repository = ref.watch(chatRepositoryProvider);
+  final chatRoomId = ref.watch(chatRoomIdProvider);
+  final initialLastMessageId = 0;
 
-  final notifier = ChatRoomStateNotifier(
+  return ChatHistoryStateNotifier(
     repository: repository,
-    lastPostId: initialLastPostId,
+    lastMessageId: initialLastMessageId,
+    chatRoomId: chatRoomId,
   );
-  return notifier;
 });
 
-class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
+class ChatHistoryStateNotifier extends StateNotifier<CursorPaginationModelBase> {
   bool _mounted = true;
 
   @override
@@ -23,12 +26,14 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
     super.dispose();
   }
 
-  final ChatRoomRepository repository;
-  int lastPostId;
+  final ChatRepository repository;
+  int chatRoomId;
+  int? lastMessageId;
 
-  ChatRoomStateNotifier({
+  ChatHistoryStateNotifier({
     required this.repository,
-    required this.lastPostId,
+    required this.chatRoomId,
+    this.lastMessageId,
   }) : super(CursorPaginationModelLoading()) {
     paginate();
   }
@@ -88,7 +93,7 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
         );
 
         // paginate 파라미터 변경
-        lastPostId = pState.data.last.chatRoomId; // 여기서 주의!!! id가 아니라 chatRoomId이당
+        lastMessageId = pState.data.last.id;
       } else {
         // fetchMore가 false -> 데이터를 처음부터 가져오는 상황
         // 만약 데이터가 있는 상황이라면 기존 데이터를 보존한 채로 api 요청을 진행
@@ -106,7 +111,10 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
       }
 
       // resp: 새로 받아온 데이터
-      final resp = await repository.paginate(lastPostId);
+      final resp = await repository.getChatHistory(
+        chatRoomId: chatRoomId,
+        lastMessageId: fetchMore ? lastMessageId : null,
+      );
 
       // Notifier가 dispose된 상태라면 작업을 수행하지 않는다.
       // 두번째 확인 -> 비동기 작업 후
@@ -142,5 +150,13 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
   }
 
 
-
+  void addNewMessage(MessageResponseModel message) {
+    var currentState = state;
+    if (currentState is CursorPaginationModel<MessageResponseModel>) {
+      // 메시지 목록의 끝에 새 메시지를 추가
+      List<MessageResponseModel> newData = List.from(currentState.data)..add(message);
+      // 새 상태로 업데이트
+      state = currentState.copyWith(data: newData);
+    }
+  }
 }
