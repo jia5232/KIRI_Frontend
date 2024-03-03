@@ -50,7 +50,7 @@ dependencies:
   flutter_email_sender: ^6.0.2
   package_info_plus: ^4.2.0
   web_socket_channel: ^2.4.0
-  stomp_dart_client: ^1.0.2
+  stomp_dart_client: ^1.0.3
 
 dev_dependencies:
   build_runner: ^2.3.3

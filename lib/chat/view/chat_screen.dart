@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kiri/chat/component/chat_notice.dart';
 import 'package:kiri/chat/component/others_chat_message.dart';
 import 'package:kiri/chat/provider/post_info_state_notifier_provider.dart';
+import 'package:kiri/chat/provider/scroll_to_bottom_button_provider.dart';
 import 'package:kiri/common/const/colors.dart';
 
 import '../../common/component/notice_popup_dialog.dart';
@@ -19,7 +20,7 @@ import '../../post/model/post_model.dart';
 import '../component/my_chat_message.dart';
 import '../model/message_response_model.dart';
 import '../provider/chat_history_provider.dart';
-import '../provider/chat_messages_state_notifier_provider.dart';
+import '../provider/chat_room_state_notifier_provider.dart';
 import '../websocket/web_socket_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -32,8 +33,6 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  GlobalKey<AnimatedListState> _animatedListKey =
-      GlobalKey<AnimatedListState>();
   ScrollController _scrollController = ScrollController();
   TextEditingController _textEditingController = TextEditingController();
 
@@ -48,15 +47,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _scrollController.addListener(_loadMoreMessages);
 
     final webSocketService = ref.read(webSocketServiceProvider);
-    webSocketService
-        .setOnMessageReceivedCallback((MessageResponseModel message) {
-      final messages = ref.read(chatMessagesProvider.notifier);
-      messages.addMessage(message);
-      _animatedListKey.currentState?.insertItem(messages.state.length - 1);
-    });
-
     final chatRoomId = ref.read(chatRoomIdProvider);
     webSocketService.connect(chatRoomId);
+    updateLastRead();
   }
 
   @override
@@ -68,7 +61,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _loadMoreMessages() {
     // reverse: true 상태에서는 스크롤이 리스트의 시작점에 도달했을 때를 감지해야 한당
-    if (_scrollController.offset >= _scrollController.position.maxScrollExtent - 30 &&
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent - 30 &&
         !_scrollController.position.outOfRange) {
       ref.read(chatHistoryProvider.notifier).paginate(fetchMore: true);
     }
@@ -110,7 +104,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           },
         ),
       );
-      if (resp.statusCode != 200){
+      if (resp.statusCode != 200) {
         print("${resp.statusCode}: ${resp.data}");
       }
     } catch (e) {
@@ -144,6 +138,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               );
               if (resp.statusCode == 200) {
                 context.go('/?tabIndex=1');
+
+                // 인덱스 1로 이동할때 상태관리 반영 안되는 오류해결용..
+                ref
+                    .read(chatRoomStateNotifierProvider.notifier)
+                    .resetLastPostId(); //lastPostId 초기화
+                ref
+                    .read(chatRoomStateNotifierProvider.notifier)
+                    .paginate(forceRefetch: true);
               } else {
                 print("${resp.statusCode}: ${resp.data}");
               }
@@ -158,8 +160,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("build!!");
     final data = ref.watch(chatHistoryProvider);
+    final showButton = ref.watch(showScrollToBottomButtonProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -168,7 +170,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _Top(context),
             _buildTitle(context, ref),
             Expanded(
-              child: _buildChatList(data, ref, context),
+              child: Stack(
+                children: [
+                  _buildChatList(data, ref, context),
+                  if(showButton) _buildScrollToBottomButton(),
+                ],
+              ),
             ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -272,10 +279,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Widget _buildChatList(CursorPaginationModelBase data, WidgetRef ref, BuildContext context){
+  Widget _buildChatList(
+      CursorPaginationModelBase data, WidgetRef ref, BuildContext context) {
     final data = ref.watch(chatHistoryProvider);
 
-    if(data is CursorPaginationModelLoading){
+    if (data is CursorPaginationModelLoading) {
       return Center(
         child: CircularProgressIndicator(
           color: PRIMARY_COLOR,
@@ -294,14 +302,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final cp = data as CursorPaginationModel;
 
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: cp.data.length,
-      reverse: true,
-      itemBuilder: (context, index) {
-        final message = cp.data[index];
-        return _buildChatMessage(context, message);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (event) {
+        final showButton = ref.read(showScrollToBottomButtonProvider.notifier);
+        if (event is ScrollNotification) {
+          if (_scrollController.offset != _scrollController.position.minScrollExtent) {
+            // 스크롤이 최하단에 도달하지 않았을 때
+            showButton.state = true; // 맨 아래로 가기 버튼 표시.
+          } else {
+            // 스크롤이 최하단에 도달했을 때
+            showButton.state = false; // 맨 아래로 가기 버튼 숨기기.
+          }
+        }
+        return false;
       },
+      child: ListView.builder(
+        controller: _scrollController,
+        itemCount: cp.data.length,
+        reverse: true,
+        itemBuilder: (context, index) {
+          final message = cp.data[index];
+          return _buildChatMessage(context, message);
+        },
+      ),
     );
   }
 
@@ -309,7 +332,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final memberState = ref.watch(memberStateNotifierProvider);
     String nickname = "";
 
-    if(message.type == 'ENTER' || message.type == 'LEAVE'){
+    if (message.type == 'ENTER' || message.type == 'LEAVE') {
       return ChatNotice(content: message.content);
     }
 
@@ -332,6 +355,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  Widget _buildScrollToBottomButton() {
+    final showButton = ref.watch(showScrollToBottomButtonProvider);
+    if (!showButton) return SizedBox.shrink(); // 버튼을 숨긴다.
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 0.0),
+      child: FloatingActionButton(
+        onPressed: _scrollToBottom,
+        child: Icon(Icons.arrow_downward),
+      ),
+    );
+  }
+
   void _handleSubmitted(String text) {
     if (text.trim().isEmpty) {
       return; // 빈 메시지는 전송하지 않음
@@ -344,6 +380,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final webSocketService = ref.read(webSocketServiceProvider);
 
     webSocketService.sendMessage(chatRoomId, text);
+    updateLastRead();
     _scrollToBottom();
   }
 
@@ -354,7 +391,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent + 100,
+            _scrollController.position.minScrollExtent,
             duration: Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -376,10 +413,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
             // bottom Navigator bar 인덱스 1번으로 가게함.
             context.go('/?tabIndex=1');
+
+            // 인덱스 1로 이동할때 상태관리 반영 안되는 오류해결용..
+            ref
+                .read(chatRoomStateNotifierProvider.notifier)
+                .resetLastPostId(); //lastPostId 초기화
+            ref
+                .read(chatRoomStateNotifierProvider.notifier)
+                .paginate(forceRefetch: true);
           },
           icon: Icon(Icons.arrow_back_ios_new),
         ),
-        if(post?.isAuthor==false) //글 작성자가 아닌 경우에만 나갈 수 있게 한다.
+        if (post?.isAuthor == false) //글 작성자가 아닌 경우에만 나갈 수 있게 한다.
           IconButton(
             onPressed: () {
               noticeBeforeLeaveDialog(context);

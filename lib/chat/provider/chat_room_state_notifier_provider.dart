@@ -23,6 +23,10 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
     super.dispose();
   }
 
+  void resetLastPostId() {
+    lastPostId = 0;
+  }
+
   final ChatRoomRepository repository;
   int lastPostId;
 

@@ -154,7 +154,7 @@ class ChatHistoryStateNotifier extends StateNotifier<CursorPaginationModelBase> 
     var currentState = state;
     if (currentState is CursorPaginationModel<MessageResponseModel>) {
       // 메시지 목록의 끝에 새 메시지를 추가
-      List<MessageResponseModel> newData = List.from(currentState.data)..add(message);
+      List<MessageResponseModel> newData = [message, ...currentState.data];
       // 새 상태로 업데이트
       state = currentState.copyWith(data: newData);
     }

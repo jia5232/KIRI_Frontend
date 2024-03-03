@@ -46,7 +46,8 @@ class _RootTabState extends ConsumerState<RootTab> with SingleTickerProviderStat
         ref.read(postStateNotifierProvider.notifier).paginate(forceRefetch: true);
         break;
       case 1:
-        ref.read(chatRoomStateNotifierProvider.notifier).paginate();
+        ref.read(chatRoomStateNotifierProvider.notifier).resetLastPostId(); //lastPostId 초기화
+        ref.read(chatRoomStateNotifierProvider.notifier).paginate(forceRefetch: true);
         break;
       case 2:
         ref.read(memberStateNotifierProvider);
