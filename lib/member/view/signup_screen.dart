@@ -20,12 +20,13 @@ class SignupScreen extends ConsumerStatefulWidget {
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
   final univNames = ['국민대학교', '세종대학교'];
-  String univName = '';
   String email_prefix = '';
   final email_suffix = {'국민대학교': '@kookmin.ac.kr', '세종대학교': '@sejong.ac.kr'};
+
+  String univName = '';
   String email = '';
-  String authNumber =
-      'tmp129049492094nkdsjlkfjwl'; // 이후 서버에서 받아올 이메일 인증번호로 초기화됨
+
+  String authNumber = 'tmp129049492094nkdsjlkfjwl'; // 이후 서버에서 받아올 이메일 인증번호로 초기화됨
   String inputAuthNumber = ''; // 사용자가 입력할 이메일 인증번호
   String nickname = '';
   String password = '';

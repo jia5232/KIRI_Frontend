@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/chat/model/message_request_model.dart';
-import 'package:kiri/chat/provider/chat_messages_state_notifier_provider.dart';
+import 'package:kiri/chat/provider/chat_history_provider.dart';
 import 'package:kiri/common/const/data.dart';
 import 'package:kiri/common/dio/secure_storage.dart';
 import 'package:stomp_dart_client/stomp.dart';
@@ -11,6 +11,7 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 
+import '../../member/provider/member_state_notifier_provider.dart';
 import '../model/message_response_model.dart';
 
 final chatRoomIdProvider =
@@ -28,6 +29,8 @@ class WebSocketService {
   StompClient? stompClient;
   final FlutterSecureStorage storage;
   final Ref ref;
+  dynamic unsubscribeFn; //구독 해제 함수를 저장!!
+  Set<String> receivedMessageIds = Set(); // 수신된 메시지 ID를 저장
 
   // 메시지 수신 시 실행할 콜백 함수
   void Function(MessageResponseModel message)? onMessageReceivedCallback;
@@ -36,6 +39,7 @@ class WebSocketService {
     this.stompClient,
     required this.storage,
     required this.ref,
+    this.unsubscribeFn,
   });
 
   // 콜백 함수를 설정하는 메서드
@@ -58,7 +62,12 @@ class WebSocketService {
           await Future.delayed(Duration(seconds: 1));
         },
         stompConnectHeaders: {'Authorization': 'Bearer $accessToken'},
-        onWebSocketError: (dynamic error) => print(error.toString()),
+        onWebSocketError: (dynamic error) {
+          print(error.toString());
+          if (error.toString().contains("토큰이 만료되었습니다.")) {
+            refreshTokenAndReconnect();
+          }
+        },
       ),
     );
     stompClient?.activate();
@@ -70,20 +79,22 @@ class WebSocketService {
     var chatRoomId = ref.read(chatRoomIdProvider.notifier).state;
 
     // 채팅방에 입장하자마자 구독 시작
-    stompClient?.subscribe(
+    unsubscribeFn = stompClient?.subscribe(
       destination: '/sub/chatroom/$chatRoomId',
       callback: (frame) {
-        print(frame.toString());
-        print("here!");
         // 채팅방으로부터 메시지 받음
         if (frame.body != null) {
           print("Received: ${frame.body}");
           final Map<String, dynamic> messageJson = jsonDecode(frame.body!);
           final MessageResponseModel message = MessageResponseModel.fromJson(messageJson);
 
-          onMessageReceivedCallback?.call(message);
-
-          ref.read(chatMessagesProvider.notifier).addMessage(message);
+          if (!receivedMessageIds.contains(message.id.toString())) {
+            receivedMessageIds.add(message.id.toString()); // 메시지 ID 저장
+            onMessageReceivedCallback?.call(message);
+            ref.read(chatHistoryProvider.notifier).addNewMessage(message);
+          } else {
+            print("중복된 메시지 -> 상태관리 추가 x: ${message.id}");
+          }
         }
       },
     );
@@ -142,6 +153,8 @@ class WebSocketService {
       await storage.write(key: ACCESS_TOKEN_KEY, value: newAccessToken);
     } on DioException catch (e) {
       print(e.toString());
+      print("refreshToken이 만료되었습니다!");
+      ref.read(memberStateNotifierProvider.notifier).logout();
     }
     stompClient?.deactivate();
 
@@ -150,6 +163,11 @@ class WebSocketService {
   }
 
   void disconnect() {
+    // 구독 해제
+    if(unsubscribeFn != null){
+      unsubscribeFn(); // 구독해제 함수 호출
+      unsubscribeFn = null;
+    }
     stompClient?.deactivate();
   }
 }

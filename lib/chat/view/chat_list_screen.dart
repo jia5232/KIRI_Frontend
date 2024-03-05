@@ -67,6 +67,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     }
 
     if (data is CursorPaginationModelError) {
+      print(data.message);
+      print(data.toString());
+      print(data.runtimeType);
       return Center(
         child: Text("데이터를 불러올 수 없습니다."),
       );
@@ -74,42 +77,39 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
     final cp = data as CursorPaginationModel;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ListView.separated(
-        controller: controller,
-        itemCount: cp.data.length + 1,
-        itemBuilder: (_, index) {
-          if (index == cp.data.length) {
-            return Center(
-              child: cp is CursorPaginationModelFetchingMore
-                  ? CircularProgressIndicator(
-                      color: PRIMARY_COLOR,
-                    )
-                  : Text(
+    return ListView.builder(
+      controller: controller,
+      itemCount: cp.data.length + 1,
+      itemBuilder: (_, index) {
+        if (index == cp.data.length) {
+          return Center(
+            child: cp is CursorPaginationModelFetchingMore
+                ? CircularProgressIndicator(
+                    color: PRIMARY_COLOR,
+                  )
+                : Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
                       'Copyright 2024. JiaKwon all rights reserved.\n',
                       style: TextStyle(
                         color: BODY_TEXT_COLOR,
                         fontSize: 12.0,
                       ),
                     ),
-            );
-          }
-
-          final pItem = cp.data[index];
-
-          return GestureDetector(
-            child: ChatRoomCard.fromModel(chatRoomModel: pItem),
-            onTap: (){
-              ref.read(chatRoomIdProvider.notifier).state = pItem.chatRoomId; //이렇게는 못하나???
-              context.goNamed('chat');
-            },
+                ),
           );
-        },
-        separatorBuilder: (_, index) {
-          return SizedBox(height: 16.0);
-        },
-      ),
+        }
+
+        final pItem = cp.data[index];
+
+        return GestureDetector(
+          child: ChatRoomCard.fromModel(chatRoomModel: pItem),
+          onTap: (){
+            ref.read(chatRoomIdProvider.notifier).state = pItem.chatRoomId; //이렇게는 못하나???
+            context.goNamed('chat');
+          },
+        );
+      },
     );
   }
 }

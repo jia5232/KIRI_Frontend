@@ -288,7 +288,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                       final isMemberJoinedChatRoom = resp.data;
                       if (!isMemberJoinedChatRoom) {
                         //아직 join되지 않은 경우에만 join하도록 -> 인원 초과시 예외처리 추후 필요!
-                        joinChatRoom(pItem.id);
+                        await joinChatRoom(pItem.id);
 
                         //chatRoomId 상태 변경
                         ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
