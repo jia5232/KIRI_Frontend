@@ -8,6 +8,7 @@ import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/provider/dio_provider.dart';
 
 import '../../common/const/data.dart';
+import '../provider/university_suffix_provider.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   static String get routeName => 'signup';
@@ -19,10 +20,7 @@ class SignupScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
-  final univNames = ['국민대학교', '세종대학교'];
-  String email_prefix = '';
-  final email_suffix = {'국민대학교': '@kookmin.ac.kr', '세종대학교': '@sejong.ac.kr'};
-
+  String emailPrefix = '';
   String univName = '';
   String email = '';
 
@@ -44,9 +42,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      univName = univNames[0];
-    });
   }
 
   void getNoticeDialog(BuildContext context, String message) {
@@ -85,6 +80,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final dio = ref.watch(dioProvider);
+    final universitySuffixData = ref.watch(universitySuffixProvider);
 
     return DefaultLayout(
       child: SingleChildScrollView(
@@ -123,44 +119,58 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
                 SizedBox(height: 20.0),
                 Text('학교'),
-                DropdownButton(
-                  value: univName,
-                  items: univNames
-                      .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e),
-                          ))
-                      .toList(),
-                  onChanged: (String? value) {
-                    setState(() {
-                      univName = value!;
-                    });
+                universitySuffixData.when(
+                  data: (Map<String, String> emailSuffixes) {
+                    List<String> univNames = emailSuffixes.keys.toList();
+                    // 기본적으로 첫 번째 대학교를 선택
+                    if (univName.isEmpty && univNames.isNotEmpty) {
+                      univName = univNames.first;
+                    }
+                    return DropdownButton<String>(
+                      value: univName,
+                      items: univNames.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          univName = newValue!;
+                        });
+                      },
+                    );
                   },
+                  loading: () => CircularProgressIndicator(),
+                  error: (_, __) => Text('데이터 로딩 실패'),
                 ),
                 SizedBox(height: 26.0),
                 Text('이메일'),
                 SizedBox(height: 4.0),
                 Row(
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 3 * 2,
-                      child: CustomTextFormField(
-                        isInputEnabled: isEmailAuthenticated ? false : true,
-                        suffixText: email_suffix[univName] == null
-                            ? ''
-                            : email_suffix[univName],
-                        hintText: '이메일 입력',
-                        onChanged: (String value) {
-                          email_prefix = value;
-                          setState(() {
-                            isEmailNull = email_prefix == '' ? true : false;
-                          });
-                          if (email_suffix[univName] == null) {
-                            return;
-                          }
-                          email = email_prefix + email_suffix[univName]!;
-                        },
-                      ),
+                    universitySuffixData.when(
+                      data: (Map<String, String> emailSuffixes) {
+                        // 선택된 대학교의 이메일 접미사를 가져온당
+                        String currentSuffix = emailSuffixes[univName] ?? '';
+                        return SizedBox(
+                          width: MediaQuery.of(context).size.width / 3 * 2,
+                          child: CustomTextFormField(
+                            isInputEnabled: !isEmailAuthenticated,
+                            suffixText: currentSuffix, //동적으로 할당된다!
+                            hintText: '이메일 입력',
+                            onChanged: (String value) {
+                              emailPrefix = value;
+                              setState(() {
+                                isEmailNull = emailPrefix.isEmpty; // 간소화된 조건문
+                                email = "$emailPrefix$currentSuffix";
+                              });
+                            },
+                          ),
+                        );
+                      },
+                      loading: () => CircularProgressIndicator(),
+                      error: (_, __) => Text('데이터 로딩 실패'),
                     ),
                     SizedBox(width: 12.0),
                     ElevatedButton(

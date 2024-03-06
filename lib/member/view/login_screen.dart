@@ -72,6 +72,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 //   width: MediaQuery.of(context).size.width / 3 * 2 ,
                 // ),
                 const SizedBox(height: 16.0),
+                Image.asset(
+                  'asset/imgs/taxiAndFriends.png',
+                  width: MediaQuery.of(context).size.width / 2,
+                ),
                 CustomTextFormField(
                   hintText: '이메일을 입력해주세요.',
                   onChanged: (String value) {
