@@ -80,6 +80,8 @@ flutter:
   assets:
     - asset/imgs/
     - asset/jsons/subway_stations.json
+    - asset/jsons/univs_name.json
+    - asset/jsons/univs_suffix.json
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

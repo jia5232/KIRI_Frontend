@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -11,11 +14,14 @@ import 'package:kiri/post/component/post_popup_dialog.dart';
 import 'package:kiri/post/provider/post_repository_provider.dart';
 import 'package:kiri/post/provider/post_screen_provider.dart';
 import 'package:kiri/post/provider/post_state_notifier_provider.dart';
+import 'package:kiri/post/provider/university_short_name_provider.dart';
 import 'package:kiri/post/view/post_form_screen.dart';
 import 'package:kiri/post/view/post_update_form_screen.dart';
 import '../../chat/websocket/web_socket_service.dart';
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/data.dart';
+import '../../member/model/member_model.dart';
+import '../../member/provider/member_state_notifier_provider.dart';
 import '../component/post_card.dart';
 
 class PostScreen extends ConsumerStatefulWidget {
@@ -109,7 +115,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
       child: SafeArea(
         child: Column(
           children: [
-            _Top(),
+            _buildTop(ref, context),
             _buildToggleButton(ref, context),
             _buildTextFormField(ref, context),
             SizedBox(height: 12),
@@ -119,6 +125,58 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTop(WidgetRef ref, BuildContext context) {
+    final memberState = ref.watch(memberStateNotifierProvider);
+    String univName = "";
+
+    if (memberState is MemberModel) {
+      univName = memberState.univName; // ex.'국민대학교'
+    }
+
+    final univShortNameFuture = ref.watch(universityShortNameProvider(univName));
+
+    return univShortNameFuture.when(
+      data: (univShortName) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '$univShortName끼리',
+              style: const TextStyle(
+                fontSize: 34,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PostFormScreen(),
+                  ),
+                );
+              },
+              icon: FaIcon(FontAwesomeIcons.solidPenToSquare),
+              label: const Text(
+                "내가 방장",
+                style: TextStyle(
+                  fontSize: 18,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+      loading: () => CircularProgressIndicator(),
+      error: (e, stack) => Text('Error: $e'),
     );
   }
 
@@ -322,50 +380,6 @@ class _PostScreenState extends ConsumerState<PostScreen> {
         separatorBuilder: (_, index) {
           return SizedBox(height: 16.0);
         },
-      ),
-    );
-  }
-}
-
-class _Top extends StatelessWidget {
-  const _Top({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '국민끼리',
-            style: TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => PostFormScreen(),
-                ),
-              );
-            },
-            icon: FaIcon(FontAwesomeIcons.solidPenToSquare),
-            label: Text(
-              "내가 방장",
-              style: TextStyle(
-                fontSize: 18,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
-          ),
-        ],
       ),
     );
   }
