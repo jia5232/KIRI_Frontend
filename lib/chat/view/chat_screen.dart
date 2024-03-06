@@ -359,8 +359,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final showButton = ref.watch(showScrollToBottomButtonProvider);
     if (!showButton) return SizedBox.shrink(); // 버튼을 숨긴다.
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 0.0),
+    return Positioned(
+      right: 16,
+      bottom: 16,
       child: FloatingActionButton(
         onPressed: _scrollToBottom,
         child: Icon(Icons.arrow_downward),
@@ -410,6 +411,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onPressed: () async {
             // 해당 채팅방에서 마지막에 존재한 시간을 업데이트
             await updateLastRead();
+
+            // web socket 연결 끊기
+            final webSocketService = ref.read(webSocketServiceProvider);
+            webSocketService.disconnect();
 
             // bottom Navigator bar 인덱스 1번으로 가게함.
             context.go('/?tabIndex=1');

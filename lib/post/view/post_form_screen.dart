@@ -8,8 +8,11 @@ import 'package:kiri/common/layout/default_layout.dart';
 
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/provider/dio_provider.dart';
+import '../../member/model/member_model.dart';
+import '../../member/provider/member_state_notifier_provider.dart';
 import '../provider/post_form_screen_provider.dart';
 import '../provider/post_state_notifier_provider.dart';
+import '../provider/university_short_name_provider.dart';
 
 class PostFormScreen extends ConsumerStatefulWidget {
   const PostFormScreen({super.key});
@@ -148,7 +151,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
             child: Column(
               children: [
-                _Top(),
+                _buildTop(ref, context),
                 SizedBox(height: 20),
                 _Notification(),
                 SizedBox(height: 20),
@@ -527,42 +530,45 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       ),
     );
   }
-}
 
-class _Top extends StatefulWidget {
-  const _Top({super.key});
+  Widget _buildTop(WidgetRef ref, BuildContext context) {
+    final memberState = ref.watch(memberStateNotifierProvider);
+    String univName = "";
 
-  @override
-  State<_Top> createState() => _TopState();
-}
+    if (memberState is MemberModel) {
+      univName = memberState.univName; // ex.'국민대학교'
+    }
 
-class _TopState extends State<_Top> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '국민끼리',
-            style: TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w500,
+    final univShortNameFuture = ref.watch(universityShortNameProvider(univName));
+
+    return univShortNameFuture.when(
+      data: (univShortName) => Container(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '$univShortName끼리',
+              style: const TextStyle(
+                fontSize: 34,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.close,
+                size: 30.0,
+              ),
               color: Colors.black,
+              onPressed: () {
+                Navigator.pop(context);
+              },
             ),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.close,
-              size: 30.0,
-            ),
-            color: Colors.black,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
+          ],
+        ),
       ),
+      loading: () => CircularProgressIndicator(),
+      error: (e, stack) => Text('Error: $e'),
     );
   }
 }
