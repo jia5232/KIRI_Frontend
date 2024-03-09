@@ -8,7 +8,7 @@ import 'package:kiri/post/repository/post_repository.dart';
 
 // postStateNotifierProvider의 존재로 인해 post_screen에 Future builder가 필요하지 않게 된다.
 final postStateNotifierProvider =
-    StateNotifierProvider<PostStateNotifier, CursorPaginationModelBase>(
+    StateNotifierProvider.autoDispose<PostStateNotifier, CursorPaginationModelBase>(
   (ref) {
     final repository = ref.watch(postRepositoryProvider);
     final isFromSchool = ref.watch(fromSchoolProvider);

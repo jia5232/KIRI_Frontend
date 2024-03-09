@@ -5,7 +5,7 @@ import 'package:kiri/post/provider/post_repository_provider.dart';
 import '../repository/post_repository.dart';
 
 final myPostStateNotifierProvider =
-    StateNotifierProvider<MyPostStateNotifier, CursorPaginationModelBase>(
+    StateNotifierProvider.autoDispose<MyPostStateNotifier, CursorPaginationModelBase>(
   (ref) {
     final repository = ref.watch(postRepositoryProvider);
     const initialLastPostId = 0;

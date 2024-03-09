@@ -61,7 +61,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
             if (resp.statusCode == 200) {
               Navigator.pop(context);
               Navigator.pop(context);
-              await ref.read(myPostStateNotifierProvider.notifier).paginate();
+              await ref.read(myPostStateNotifierProvider.notifier).paginate(forceRefetch: true);
             }
           },
         );
