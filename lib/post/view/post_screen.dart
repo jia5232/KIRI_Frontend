@@ -64,19 +64,36 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           buttonText: "삭제하기",
           onPressed: () async {
             final dio = ref.read(dioProvider);
-            final resp = await dio.delete(
-              "http://$ip/posts/$postId",
-              options: Options(
-                headers: {
-                  'Content-Type': 'application/json',
-                  'accessToken': 'true',
+            try {
+              final resp = await dio.delete(
+                "http://$ip/posts/$postId",
+                options: Options(
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'accessToken': 'true',
+                  },
+                ),
+              );
+              if (resp.statusCode == 200) {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                ref.refresh(postStateNotifierProvider);
+              }
+            } on DioException catch (e) {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              showDialog( // 새로운 팝업 표시
+                context: context,
+                builder: (context) {
+                  return NoticePopupDialog(
+                    message: e.response?.data["message"] ?? "에러 발생",
+                    buttonText: "닫기",
+                    onPressed: () {
+                      Navigator.pop(context); // 두 번째 팝업 닫기
+                    },
+                  );
                 },
-              ),
-            );
-            if (resp.statusCode == 200) {
-              Navigator.pop(context);
-              Navigator.pop(context);
-              ref.refresh(postStateNotifierProvider);
+              );
             }
           },
         );
@@ -84,7 +101,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     );
   }
 
- Future<void> joinChatRoom(int postId) async {
+  Future<void> joinChatRoom(int postId) async {
     final dio = ref.read(dioProvider);
     try {
       final resp = await dio.post(
@@ -136,7 +153,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
       univName = memberState.univName; // ex.'국민대학교'
     }
 
-    final univShortNameFuture = ref.watch(universityShortNameProvider(univName));
+    final univShortNameFuture =
+        ref.watch(universityShortNameProvider(univName));
 
     return univShortNameFuture.when(
       data: (univShortName) => Container(
@@ -349,11 +367,14 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                         await joinChatRoom(pItem.id);
 
                         //chatRoomId 상태 변경
-                        ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
+                        ref.read(chatRoomIdProvider.notifier).state =
+                            detailedPostModel.chatRoomId;
                         context.goNamed('chat');
-                      } else{ //이미 join된 경우면 그냥 넘어가도록
+                      } else {
+                        //이미 join된 경우면 그냥 넘어가도록
                         //chatRoomId 상태 변경
-                        ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
+                        ref.read(chatRoomIdProvider.notifier).state =
+                            detailedPostModel.chatRoomId;
                         context.goNamed('chat');
                       }
                     },
