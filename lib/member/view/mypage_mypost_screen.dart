@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kiri/common/layout/default_layout.dart';
 
+import '../../chat/websocket/web_socket_service.dart';
 import '../../common/component/notice_popup_dialog.dart';
 import '../../common/const/colors.dart';
 import '../../common/const/data.dart';
@@ -61,7 +63,7 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
             if (resp.statusCode == 200) {
               Navigator.pop(context);
               Navigator.pop(context);
-              await ref.read(myPostStateNotifierProvider.notifier).paginate(forceRefetch: true);
+              ref.refresh(myPostStateNotifierProvider);
             }
           },
         );
@@ -155,7 +157,8 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
                     cost: detailedPostModel.cost,
                     isAuthor: detailedPostModel.isAuthor,
                     joinOnPressed: () {
-                      print('join button clicked!');
+                      ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
+                      context.goNamed('chat');
                     },
                     deleteOnPressed: () {
                       noticeBeforeDeleteDialog(context, pItem.id);

@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/chat/repository/chat_room_repository.dart';
 import 'package:kiri/common/model/cursor_pagination_model.dart';
 
-final chatRoomStateNotifierProvider = StateNotifierProvider<ChatRoomStateNotifier, CursorPaginationModelBase>(
+final chatRoomStateNotifierProvider = StateNotifierProvider.autoDispose<ChatRoomStateNotifier, CursorPaginationModelBase>(
         (ref) {
   final repository = ref.watch(chatRoomRepositoryProvider);
   final initialLastPostId = 0;
