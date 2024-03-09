@@ -3,12 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kiri/common/const/data.dart';
 import 'package:kiri/member/model/member_model.dart';
-import 'package:kiri/member/provider/auth_repository_provider.dart';
-import 'package:kiri/member/provider/member_repository_provider.dart';
-import 'package:kiri/member/repository/auth_repository.dart';
 
 import '../../common/dio/secure_storage.dart';
-import '../repository/member_repository.dart';
+import '../repository/auth_repository_provider.dart';
+import '../repository/member_repository_provider.dart';
 
 final memberStateNotifierProvider = StateNotifierProvider<MemberStateNotifier, MemberModelBase?>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);

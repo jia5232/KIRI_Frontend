@@ -1,8 +1,19 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kiri/common/model/login_response.dart';
 import 'package:kiri/common/model/token_response.dart';
-import 'package:retrofit/http.dart';
 
+import '../../common/const/data.dart';
+import '../../common/provider/dio_provider.dart';
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  final dio = ref.watch(dioProvider);
+
+  return AuthRepository(
+    baseUrl: 'http://$ip',
+    dio: dio,
+  );
+});
 
 class AuthRepository {
   final String baseUrl;
