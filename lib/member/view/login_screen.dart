@@ -67,10 +67,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16.0),
                 _Title(),
                 _SubTitle(),
-                // Image.asset(
-                //   'asset/imgs/taxi.png',
-                //   width: MediaQuery.of(context).size.width / 3 * 2 ,
-                // ),
                 const SizedBox(height: 16.0),
                 Image.asset(
                   'asset/imgs/taxiAndFriends.png',
