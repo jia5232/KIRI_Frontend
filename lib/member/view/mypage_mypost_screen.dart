@@ -51,19 +51,36 @@ class _MyPageMyPostScreenState extends ConsumerState<MyPageMyPostScreen> {
           buttonText: "삭제하기",
           onPressed: () async {
             final dio = ref.read(dioProvider);
-            final resp = await dio.delete(
-              "http://$ip/posts/$postId",
-              options: Options(
-                headers: {
-                  'Content-Type': 'application/json',
-                  'accessToken': 'true',
+            try {
+              final resp = await dio.delete(
+                "http://$ip/posts/$postId",
+                options: Options(
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'accessToken': 'true',
+                  },
+                ),
+              );
+              if (resp.statusCode == 200) {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                ref.refresh(myPostStateNotifierProvider);
+              }
+            } on DioException catch (e) {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              showDialog( // 새로운 팝업 표시
+                context: context,
+                builder: (context) {
+                  return NoticePopupDialog(
+                    message: e.response?.data["message"] ?? "에러 발생",
+                    buttonText: "닫기",
+                    onPressed: () {
+                      Navigator.pop(context); // 두 번째 팝업 닫기
+                    },
+                  );
                 },
-              ),
-            );
-            if (resp.statusCode == 200) {
-              Navigator.pop(context);
-              Navigator.pop(context);
-              ref.refresh(myPostStateNotifierProvider);
+              );
             }
           },
         );
