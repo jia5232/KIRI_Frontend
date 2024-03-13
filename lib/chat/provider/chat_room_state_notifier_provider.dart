@@ -16,6 +16,7 @@ final chatRoomStateNotifierProvider = StateNotifierProvider.autoDispose<ChatRoom
 
 class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
   bool _mounted = true;
+  bool _fetchingData = false;
 
   @override
   void dispose() {
@@ -51,6 +52,10 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
     // Notifier가 dispose된 상태라면 작업을 수행하지 않는다.
     // 첫번째 확인 -> 메서드 시작시
     if (!isMounted) return;
+
+    // 이미 paginate() 작업이 진행 중인지 확인
+    if (_fetchingData) return;
+    _fetchingData = true;
 
     try {
       // 5가지 가능성 (state의 상태) -> CursorPaginationModelBase를 상속하는 클래스가 5개이기 때문이다.
@@ -142,6 +147,8 @@ class ChatRoomStateNotifier extends StateNotifier<CursorPaginationModelBase> {
       print(e.runtimeType);
 
       state = CursorPaginationModelError(message: '데이터를 가져오지 못했습니다');
+    } finally {
+      _fetchingData = false;
     }
   }
 
