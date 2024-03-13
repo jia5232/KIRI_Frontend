@@ -134,7 +134,6 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
       fontSize: 18.0,
     );
 
-    //TextFormField border style!!
     final baseBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(10.0),
       borderSide: BorderSide(
