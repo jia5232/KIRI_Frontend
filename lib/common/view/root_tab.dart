@@ -35,7 +35,7 @@ class _RootTabState extends ConsumerState<RootTab> with SingleTickerProviderStat
     index = widget.initialIndex;
   }
 
-  void tabListener() {
+  void tabListener() async {
     setState(() {
       index = controller.index;
     });

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kiri/member/model/member_model.dart';
 import 'package:kiri/member/provider/member_state_notifier_provider.dart';
 import 'package:kiri/member/view/signup_screen.dart';
@@ -40,6 +39,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(memberStateNotifierProvider);
+
+    // 로그인 오류가 났을 경우엔 팝업으로 알림보내기
+    if (state is MemberModelError) {
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
+        getNoticeDialog(context, state.message);
+      });
+    }
 
     return DefaultLayout(
       child: SingleChildScrollView(
@@ -93,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: state is MemberModelLoading //로딩중이면 로그인 버튼 못누르도록
                         ? null
                         : () async {
-                            ref
+                            await ref
                                 .read(memberStateNotifierProvider.notifier)
                                 .login(email: email, password: password);
                           },
@@ -112,12 +118,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: state is MemberModelLoading //로딩중이면 회원가입 버튼 못누르도록
                         ? null
                         : () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SignupScreen(),
-                        ),
-                      );
-                    },
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => SignupScreen(),
+                              ),
+                            );
+                          },
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all(PRIMARY_COLOR),
                       side: MaterialStateProperty.all(
