@@ -24,7 +24,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   String univName = '';
   String email = '';
 
-  String authNumber = 'tmp129049492094nkdsjlkfjwl'; // 이후 서버에서 받아올 이메일 인증번호로 초기화됨
+  String authNumber =
+      'tmp129049492094nkdsjlkfjwl'; // 이후 서버에서 받아올 이메일 인증번호로 초기화됨
   String inputAuthNumber = ''; // 사용자가 입력할 이메일 인증번호
   String nickname = '';
   String password = '';
@@ -128,7 +129,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     }
                     return DropdownButton<String>(
                       value: univName,
-                      items: univNames.map<DropdownMenuItem<String>>((String value) {
+                      items: univNames
+                          .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -181,24 +183,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       onPressed: (isEmailNull || isEmailAuthenticated)
                           ? null
                           : () async {
-                              // 인증번호 전송 api
-                              // 중복 이메일 -> 이미 가입된 이메일입니다.
-                              // 신규 이메일 -> 서버에서 인증번호를 받아 저장해둔다.
-                              // authNumber = 서버에서 발급한 인증번호.
-                              final resp = await dio.post(
-                                'http://$ip/email',
-                                data: {'email': email},
-                                options: Options(
-                                  headers: {'Content-Type': 'application/json'},
-                                ),
-                              );
-                              if (resp.data.containsKey('exist')) {
+                              try {
+                                final resp = await dio.post(
+                                  'http://$ip/email',
+                                  data: {'email': email},
+                                  options: Options(
+                                    headers: {
+                                      'Content-Type': 'application/json'
+                                    },
+                                  ),
+                                );
+                                if (resp.data.containsKey('exist')) {
+                                  getNoticeDialog(
+                                      context, resp.data['exist'].toString());
+                                } else if (resp.data
+                                    .containsKey('authNumber')) {
+                                  authNumber = resp.data['authNumber'];
+                                } else {
+                                  getNoticeDialog(
+                                      context, '알 수 없는 오류가 발생했습니다.');
+                                }
+                              } catch(e){
                                 getNoticeDialog(
-                                    context, resp.data['exist'].toString());
-                              } else if (resp.data.containsKey('authNumber')) {
-                                authNumber = resp.data['authNumber'];
-                              } else {
-                                // 기타 오류 처리
+                                    context, '알 수 없는 오류가 발생했습니다.');
                               }
                             },
                       child: Text('인증'),
@@ -278,22 +285,27 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       onPressed: (isNicknameNull || !isNicknameDuplicated)
                           ? null
                           : () async {
-                              // 닉네임 중복 확인 api
-                              final resp = await dio.get(
-                                'http://$ip/nicknameExists',
-                                data: {'nickname': nickname},
-                                options: Options(
-                                  headers: {'Content-Type': 'application/json'},
-                                ),
-                              );
-                              setState(() {
-                                isNicknameDuplicated = resp.data;
-                              });
+                              try{
+                                // 닉네임 중복 확인 api
+                                final resp = await dio.get(
+                                  'http://$ip/nicknameExists',
+                                  data: {'nickname': nickname},
+                                  options: Options(
+                                    headers: {'Content-Type': 'application/json'},
+                                  ),
+                                );
+                                setState(() {
+                                  isNicknameDuplicated = resp.data;
+                                });
 
-                              if (isNicknameDuplicated) {
-                                getNoticeDialog(context, '이미 사용중인 닉네임입니다.');
-                              } else {
-                                getNoticeDialog(context, '사용 가능한 닉네임입니다');
+                                if (isNicknameDuplicated) {
+                                  getNoticeDialog(context, '이미 사용중인 닉네임입니다.');
+                                } else {
+                                  getNoticeDialog(context, '사용 가능한 닉네임입니다');
+                                }
+                              } catch(e){
+                                getNoticeDialog(
+                                    context, '알 수 없는 오류가 발생했습니다.');
                               }
                             },
                       child: Text('확인'),
@@ -441,8 +453,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           getSignupResultDialog(context, "회원가입이 완료되었습니다.");
                         }
                       } catch (e) {
-                        getNoticeDialog(context, e.toString());
+                        getNoticeDialog(context, "회원가입에 실패했습니다.");
                       }
+                    } else {
+                      getNoticeDialog(context, "회원가입에 필요한 정보를 모두 입력해주세요.");
                     }
                   },
                   child: Text('회원가입하기'),

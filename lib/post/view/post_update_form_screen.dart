@@ -9,7 +9,7 @@ import '../../common/component/notice_popup_dialog.dart';
 import '../../common/provider/dio_provider.dart';
 import '../../member/model/member_model.dart';
 import '../../member/provider/member_state_notifier_provider.dart';
-import '../provider/post_form_screen_provider.dart';
+import '../provider/subway_provider.dart';
 import '../provider/post_state_notifier_provider.dart';
 import '../provider/university_short_name_provider.dart';
 

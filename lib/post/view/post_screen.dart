@@ -55,6 +55,21 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     }
   }
 
+  void getNoticeDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "닫기",
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   void noticeBeforeDeleteDialog(BuildContext context, int postId) async {
     showDialog(
       context: context,
@@ -64,19 +79,28 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           buttonText: "삭제하기",
           onPressed: () async {
             final dio = ref.read(dioProvider);
-            final resp = await dio.delete(
-              "http://$ip/posts/$postId",
-              options: Options(
-                headers: {
-                  'Content-Type': 'application/json',
-                  'accessToken': 'true',
-                },
-              ),
-            );
-            if (resp.statusCode == 200) {
+            try {
+              final resp = await dio.delete(
+                "http://$ip/posts/$postId",
+                options: Options(
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'accessToken': 'true',
+                  },
+                ),
+              );
+              if (resp.statusCode == 200) {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                ref.refresh(postStateNotifierProvider);
+              }
+            } on DioException catch (e) {
               Navigator.pop(context);
               Navigator.pop(context);
-              ref.refresh(postStateNotifierProvider);
+              getNoticeDialog(
+                context,
+                e.response?.data["message"] ?? "에러 발생",
+              );
             }
           },
         );
@@ -84,7 +108,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     );
   }
 
- Future<void> joinChatRoom(int postId) async {
+  Future<void> joinChatRoom(int postId) async {
     final dio = ref.read(dioProvider);
     try {
       final resp = await dio.post(
@@ -96,13 +120,21 @@ class _PostScreenState extends ConsumerState<PostScreen> {
         ),
       );
       if (resp.statusCode == 200) {
-        print("return true!");
-      } else {
-        print(resp.statusCode);
-        print(resp.toString());
+        context.goNamed('chat');
       }
-    } catch (e) {
-      print(e.toString());
+    } on DioException catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return NoticePopupDialog(
+            message: e.response?.data["message"] ?? "에러 발생",
+            buttonText: "닫기",
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
     }
   }
 
@@ -136,7 +168,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
       univName = memberState.univName; // ex.'국민대학교'
     }
 
-    final univShortNameFuture = ref.watch(universityShortNameProvider(univName));
+    final univShortNameFuture =
+        ref.watch(universityShortNameProvider(univName));
 
     return univShortNameFuture.when(
       data: (univShortName) => Container(
@@ -335,26 +368,35 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     joinOnPressed: () async {
                       //글 작성자면 그냥 이동하도록, 작성자가 아니라면 joinChatRoom()하고 이동하도록
                       final dio = ref.read(dioProvider);
-                      final resp = await dio.get(
-                        'http://$ip/chatrooms/is-joined/${pItem.id}',
-                        options: Options(
-                          headers: {
-                            'accessToken': 'true',
-                          },
-                        ),
-                      );
-                      final isMemberJoinedChatRoom = resp.data;
-                      if (!isMemberJoinedChatRoom) {
-                        //아직 join되지 않은 경우에만 join하도록 -> 인원 초과시 예외처리 추후 필요!
-                        await joinChatRoom(pItem.id);
+                      try {
+                        final resp = await dio.get(
+                          'http://$ip/chatrooms/is-joined/${pItem.id}',
+                          options: Options(
+                            headers: {
+                              'accessToken': 'true',
+                            },
+                          ),
+                        );
+                        final isMemberJoinedChatRoom = resp.data;
+                        if (!isMemberJoinedChatRoom) {
+                          //아직 join되지 않은 경우에만 join하도록 -> 인원 초과시 예외처리 추후 필요!
+                          await joinChatRoom(pItem.id);
 
-                        //chatRoomId 상태 변경
-                        ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
-                        context.goNamed('chat');
-                      } else{ //이미 join된 경우면 그냥 넘어가도록
-                        //chatRoomId 상태 변경
-                        ref.read(chatRoomIdProvider.notifier).state = detailedPostModel.chatRoomId;
-                        context.goNamed('chat');
+                          //chatRoomId 상태 변경
+                          ref.read(chatRoomIdProvider.notifier).state =
+                              detailedPostModel.chatRoomId;
+                        } else {
+                          //이미 join된 경우면 그냥 넘어가도록
+                          //chatRoomId 상태 변경
+                          ref.read(chatRoomIdProvider.notifier).state =
+                              detailedPostModel.chatRoomId;
+                          context.goNamed('chat');
+                        }
+                      } on DioException catch (e) {
+                        getNoticeDialog(
+                          context,
+                          e.response?.data["message"] ?? "에러 발생",
+                        );
                       }
                     },
                     deleteOnPressed: () {
