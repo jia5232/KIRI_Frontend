@@ -8,7 +8,6 @@ import 'package:kiri/common/layout/default_layout.dart';
 import 'package:kiri/common/provider/dio_provider.dart';
 
 import '../../common/const/data.dart';
-import '../provider/university_suffix_provider.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   static String get routeName => 'signup';
@@ -42,6 +41,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   bool isNicknameNull = true;
   bool isNicknameDuplicated = true;
+
+  //학교명 검색 기능
+  String searchKeyword = "";
+  List<String> searchedUniversities = [];
+  bool isSearching = false;
+  GlobalKey emailFieldKey = GlobalKey();
+  double calculatedTopOffset = 0;
 
   @override
   void initState() {
@@ -81,11 +87,37 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
   }
 
+  void _toggleSuggestionBoxVisibility() {
+    final RenderBox? renderBox =
+        emailFieldKey.currentContext?.findRenderObject() as RenderBox?;
+    final offset = renderBox?.localToGlobal(Offset.zero);
+
+    setState(() {
+      calculatedTopOffset = offset?.dy ?? 0 + renderBox!.size.height ?? 0;
+      isSearching = !isSearching;
+    });
+  }
+
+  Future<List<String>?> searchUniversities(searchKeyword) async {
+    final dio = ref.watch(dioProvider);
+
+    try {
+      final response = await dio.get('http://$ip/universities/search',
+          queryParameters: {'searchKeyword': searchKeyword});
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        return data.map<String>((univ) => univ as String).toList();
+      } else {
+        getNoticeDialog(context, '대학교 로드 실패');
+      }
+    } catch (e) {
+      print(e);
+      getNoticeDialog(context, '대학교 로드 실패');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final dio = ref.watch(dioProvider);
-    final universitySuffixData = ref.watch(universitySuffixProvider);
-
     return DefaultLayout(
       child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -94,15 +126,56 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           bottom: false,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Stack(
               children: [
-                _renderTop(),
-                _renderEmailField(),
-                _renderNicknameField(),
-                _renderPasswordField(),
-                _renderIsAcceptCheckbox(),
-                _renderRegisterButton(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _renderTop(),
+                    _renderSchoolField(),
+                    _renderEmailField(),
+                    _renderNicknameField(),
+                    _renderPasswordField(),
+                    _renderIsAcceptCheckbox(),
+                    _renderRegisterButton(),
+                  ],
+                ),
+                Positioned(
+                  top: calculatedTopOffset,
+                  left: 0,
+                  right: 0,
+                  child: Visibility(
+                    visible: searchedUniversities.isNotEmpty,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: searchedUniversities.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(searchedUniversities[index]),
+                            onTap: () {
+                              setState(() {
+                                univName = searchedUniversities[index];
+                                searchedUniversities.clear();
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -111,7 +184,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
   }
 
-  Widget _renderTop(){
+  Widget _renderTop() {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Row(
@@ -140,11 +213,81 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
   }
 
+  Widget _renderSchoolField() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('학교 : '),
+              SizedBox(width: 4.0),
+              Text(
+                univName,
+              ),
+            ],
+          ),
+          SizedBox(height: 4.0),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 3 * 2,
+                child: CustomTextFormField(
+                  key: emailFieldKey,
+                  hintText: '대학교 이름을 검색해주세요.',
+                  onChanged: (String value) {
+                    setState(() {
+                      searchKeyword = value;
+                      if (searchKeyword.isEmpty) {
+                        searchedUniversities.clear();
+                      } else {
+                        _toggleSuggestionBoxVisibility();
+                      }
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12.0),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: PRIMARY_COLOR,
+                ),
+                onPressed: () async {
+                        if (searchKeyword.isNotEmpty) {
+                          setState(() {
+                            isSearching = true;
+                          });
+
+                          final universities =
+                              await searchUniversities(searchKeyword);
+
+                          if (universities != null) {
+                            setState(() {
+                              searchedUniversities = universities;
+                              isSearching = false;
+                            });
+                          } else {
+                            setState(() {
+                              isSearching = false;
+                            });
+                          }
+                        }
+                      },
+                child: Text('검색'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _renderEmailField() {
     final dio = ref.watch(dioProvider);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+      padding: const EdgeInsets.only(bottom: 30.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -170,58 +313,56 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PRIMARY_COLOR,
                 ),
-                onPressed: (isEmailNull || isEmailAuthenticated)
+                onPressed: (isEmailNull || isEmailAuthenticated || isEmailSend)
                     ? null
                     : () async {
-                  try {
-                    final resp = await dio.post(
-                      'http://$ip/email',
-                      data: {'email': email},
-                      options: Options(
-                        headers: {
-                          'Content-Type': 'application/json'
-                        },
-                      ),
-                    );
-                    if (resp.statusCode == 200) {
-                      setState(() {
-                        isEmailSend = true;
-                      });
+                        try {
+                          final resp = await dio.post(
+                            'http://$ip/email',
+                            data: {'email': email},
+                            options: Options(
+                              headers: {'Content-Type': 'application/json'},
+                            ),
+                          );
+                          if (resp.statusCode == 200) {
+                            setState(() {
+                              isEmailSend = true;
+                            });
 
-                      if (resp.data.containsKey('authNumber')) {
-                        authNumber = resp.data['authNumber'];
-                      } else {
-                        getNoticeDialog(context, '알 수 없는 오류가 발생했습니다.');
-                      }
+                            if (resp.data.containsKey('authNumber')) {
+                              authNumber = resp.data['authNumber'];
+                            } else {
+                              getNoticeDialog(context, '알 수 없는 오류가 발생했습니다.');
+                            }
 
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return NoticePopupDialog(
-                            message: "인증번호가 전송되었습니다.",
-                            buttonText: "닫기",
-                            onPressed: () {
-                              Navigator.pop(context); // 두 번째 팝업 닫기
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return NoticePopupDialog(
+                                  message: "인증번호가 전송되었습니다.",
+                                  buttonText: "닫기",
+                                  onPressed: () {
+                                    Navigator.pop(context); // 두 번째 팝업 닫기
+                                  },
+                                );
+                              },
+                            );
+                          }
+                        } on DioException catch (e) {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return NoticePopupDialog(
+                                message: e.response?.data["message"] ?? "에러 발생",
+                                buttonText: "닫기",
+                                onPressed: () {
+                                  Navigator.pop(context); // 두 번째 팝업 닫기
+                                },
+                              );
                             },
                           );
-                        },
-                      );
-                    }
-                  } on DioException catch (e) {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return NoticePopupDialog(
-                          message: e.response?.data["message"] ?? "에러 발생",
-                          buttonText: "닫기",
-                          onPressed: () {
-                            Navigator.pop(context); // 두 번째 팝업 닫기
-                          },
-                        );
+                        }
                       },
-                    );
-                  }
-                },
                 child: Text('전송'),
               ),
             ],
@@ -259,19 +400,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 onPressed: isEmailAuthenticated
                     ? null
                     : () {
-                  setState(() {
-                    isEmailAuthenticated =
-                    authNumber == inputAuthNumber
-                        ? true
-                        : false;
-                  });
+                        setState(() {
+                          isEmailAuthenticated =
+                              authNumber == inputAuthNumber ? true : false;
+                        });
 
-                  if (isEmailAuthenticated) {
-                    getNoticeDialog(context, '인증번호가 일치합니다.');
-                  } else {
-                    getNoticeDialog(context, '인증번호가 일치하지 않습니다.');
-                  }
-                },
+                        if (isEmailAuthenticated) {
+                          getNoticeDialog(context, '인증번호가 일치합니다.');
+                        } else {
+                          getNoticeDialog(context, '인증번호가 일치하지 않습니다.');
+                        }
+                      },
                 child: Text('확인'),
               ),
             ],
@@ -314,28 +453,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 onPressed: (isNicknameNull || !isNicknameDuplicated)
                     ? null
                     : () async {
-                  try{
-                    // 닉네임 중복 확인 api
-                    final resp = await dio.get(
-                      'http://$ip/nicknameExists',
-                      data: {'nickname': nickname},
-                      options: Options(
-                        headers: {'Content-Type': 'application/json'},
-                      ),
-                    );
-                    setState(() {
-                      isNicknameDuplicated = resp.data;
-                    });
+                        try {
+                          // 닉네임 중복 확인 api
+                          final resp = await dio.get(
+                            'http://$ip/nicknameExists',
+                            data: {'nickname': nickname},
+                            options: Options(
+                              headers: {'Content-Type': 'application/json'},
+                            ),
+                          );
+                          setState(() {
+                            isNicknameDuplicated = resp.data;
+                          });
 
-                    if (isNicknameDuplicated) {
-                      getNoticeDialog(context, '이미 사용중인 닉네임입니다.');
-                    } else {
-                      getNoticeDialog(context, '사용 가능한 닉네임입니다');
-                    }
-                  } catch(e){
-                    getNoticeDialog(context, '알 수 없는 오류가 발생했습니다.');
-                  }
-                },
+                          if (isNicknameDuplicated) {
+                            getNoticeDialog(context, '이미 사용중인 닉네임입니다.');
+                          } else {
+                            getNoticeDialog(context, '사용 가능한 닉네임입니다');
+                          }
+                        } catch (e) {
+                          getNoticeDialog(context, '알 수 없는 오류가 발생했습니다.');
+                        }
+                      },
                 child: Text('확인'),
               ),
             ],
@@ -371,7 +510,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 setState(() {
                   isPasswordDifferent = password == password2 ? false : true;
                   isPasswordNull =
-                  (password == '' && password2 == '') ? true : false;
+                      (password == '' && password2 == '') ? true : false;
                 });
               },
             ),
@@ -388,7 +527,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 setState(() {
                   isPasswordDifferent = password == password2 ? false : true;
                   isPasswordNull =
-                  (password == '' && password2 == '') ? true : false;
+                      (password == '' && password2 == '') ? true : false;
                 });
               },
             ),
@@ -493,6 +632,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 'email': email,
                 'password': password,
                 'nickname': nickname,
+                'univName': univName,
                 'isAccept': isAccept,
                 'isEmailAuthenticated': isEmailAuthenticated,
               },
