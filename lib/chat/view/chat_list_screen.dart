@@ -105,7 +105,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         return GestureDetector(
           child: ChatRoomCard.fromModel(chatRoomModel: pItem),
           onTap: (){
-            ref.read(chatRoomIdProvider.notifier).state = pItem.chatRoomId; //이렇게는 못하나???
+            ref.read(chatRoomIdProvider.notifier).state = pItem.chatRoomId;
             context.goNamed('chat');
           },
         );
