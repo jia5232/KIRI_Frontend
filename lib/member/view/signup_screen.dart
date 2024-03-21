@@ -215,7 +215,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   Widget _renderSchoolField() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -287,7 +287,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final dio = ref.watch(dioProvider);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0),
+      padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -424,7 +424,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final dio = ref.watch(dioProvider);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0),
+      padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -480,10 +480,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ],
           ),
           if (isNicknameNull) //이메일 검증
-            const Text(
-              '닉네임은 빈칸일 수 없습니다.',
-              style: TextStyle(
-                fontSize: 12.0,
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: const Text(
+                '닉네임은 빈칸일 수 없습니다.',
+                style: TextStyle(
+                  fontSize: 12.0,
+                ),
               ),
             ),
         ],
@@ -493,7 +496,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   Widget _renderPasswordField() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 0, 30),
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -559,7 +562,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   Widget _renderIsAcceptCheckbox() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0),
+      padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
         children: [
           Text('개인정보 수집 및 이용 동의'),
