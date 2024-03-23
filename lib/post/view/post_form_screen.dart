@@ -489,7 +489,7 @@ class _PostFormScreenState extends ConsumerState<PostFormScreen> {
                                   getPostResultDialog(context, "글 등록이 완료되었습니다.");
                                 }
                               } catch (e) {
-                                getNoticeDialog(context, "에러가 발생했습니다!");
+                                getNoticeDialog(context, "오류가 발생했습니다.");
                               }
                             }
                           },

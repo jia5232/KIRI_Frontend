@@ -59,6 +59,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
+  void getNoticeDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return NoticePopupDialog(
+          message: message,
+          buttonText: "닫기",
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   void _loadMoreMessages() {
     // reverse: true 상태에서는 스크롤이 리스트의 시작점에 도달했을 때를 감지해야 한당
     if (_scrollController.offset >=
@@ -87,7 +102,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         print("${resp.statusCode}: ${resp.data}");
       }
     } catch (e) {
-      print(e.toString());
+      getNoticeDialog(context, "오류가 발생했습니다.");
     }
   }
 
@@ -108,7 +123,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         print("${resp.statusCode}: ${resp.data}");
       }
     } catch (e) {
-      print(e.toString());
+      getNoticeDialog(context, "오류가 발생했습니다.");
     }
   }
 
@@ -146,11 +161,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ref
                     .read(chatRoomStateNotifierProvider.notifier)
                     .paginate(forceRefetch: true);
-              } else {
-                print("${resp.statusCode}: ${resp.data}");
               }
             } catch (e) {
-              print(e.toString());
+              getNoticeDialog(context, "오류가 발생했습니다.");
             }
           },
         );

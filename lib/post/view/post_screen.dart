@@ -173,36 +173,55 @@ class _PostScreenState extends ConsumerState<PostScreen> {
 
     return univShortNameFuture.when(
       data: (univShortName) => Container(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+        height: 80,
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '$univShortName끼리',
-              style: const TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PostFormScreen(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$univShortName끼리',
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
                   ),
-                );
-              },
-              icon: FaIcon(FontAwesomeIcons.solidPenToSquare),
-              label: const Text(
-                "내가 방장",
-                style: TextStyle(
-                  fontSize: 18,
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                SizedBox(height: 2.0),
+                Text(
+                  univName,
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: BODY_TEXT_COLOR,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 60.0,
+              child: TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PostFormScreen(),
+                    ),
+                  );
+                },
+                icon: const FaIcon(
+                  FontAwesomeIcons.solidPenToSquare,
+                ),
+                label: const Text(
+                  "내가 방장",
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                ),
               ),
             ),
           ],

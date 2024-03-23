@@ -501,8 +501,7 @@ class _PostUpdateFormScreenState extends ConsumerState<PostUpdateFormScreen> {
                                   getUpdateResultDialog(context, "글 수정이 완료되었습니다.");
                                 }
                               } catch (e) {
-                                // getNoticeDialog(context, "에러가 발생했습니다!");
-                                print(e.toString());
+                                getNoticeDialog(context, "오류가 발생했습니다.");
                               }
                             }
                           },
